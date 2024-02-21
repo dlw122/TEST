@@ -12,7 +12,7 @@ local result = uart.setup(
 
 
 --循环发数据
-sys.timerLoopStart(uart.write,1000, uartid, "test")
+--sys.timerLoopStart(uart.write,1000, uartid, "test")
 -- 收取数据会触发回调, 这里的"receive" 是固定值
 uart.on(uartid, "receive", function(id, len)
     local s = ""

@@ -26,28 +26,44 @@ local function Get_Self_Check() return Self_Check end
 gpio.setup(KEYX[1] , nil)  --输入模式
 ------------------------------------------------------
 
-gpio.debounce(KEYX[2], key_timer)
+gpio.debounce(KEYX[2], key_timer, 1)
 gpio.setup(KEYX[2], function()
-    log.info(" -------------------------------", KEYX[2])
-    sys.publish("LED_Chx",key_irq,1,1)
+    log.warn(" -------------------------------", KEYX[2])
+    if _led.Get_Electromagnetic_ChX(1) == 1 then 
+        sys.publish("LED_Chx",key_irq,1,0)
+    elseif _led.Get_Electromagnetic_ChX(1) == 0 then
+        sys.publish("LED_Chx",key_irq,1,1)
+    end
 end, gpio.PULLUP,gpio.FALLING,4)
 
-gpio.debounce(KEYX[3], key_timer)
+gpio.debounce(KEYX[3], key_timer, 1)
 gpio.setup(KEYX[3], function()
-    log.info(" -------------------------------", KEYX[3])
-    sys.publish("LED_Chx",key_irq,2,1)
+    log.warn(" -------------------------------", KEYX[3])
+    if _led.Get_Electromagnetic_ChX(2) == 1 then 
+        sys.publish("LED_Chx",key_irq,2,0)
+    elseif _led.Get_Electromagnetic_ChX(2) == 0 then
+        sys.publish("LED_Chx",key_irq,2,1)
+    end
 end, gpio.PULLUP,gpio.FALLING,4)
 
-gpio.debounce(KEYX[4], key_timer)
+gpio.debounce(KEYX[4], key_timer, 1)
 gpio.setup(KEYX[4], function()
-    log.info(" -------------------------------", KEYX[4])
-    sys.publish("LED_Chx",key_irq,3,1)
+    log.warn(" -------------------------------", KEYX[4])
+    if _led.Get_Electromagnetic_ChX(3) == 1 then 
+        sys.publish("LED_Chx",key_irq,3,0)
+    elseif _led.Get_Electromagnetic_ChX(3) == 0 then
+        sys.publish("LED_Chx",key_irq,3,1)
+    end
 end, gpio.PULLUP,gpio.FALLING)
 
-gpio.debounce(KEYX[5], key_timer)
+gpio.debounce(KEYX[5], key_timer, 1)
 gpio.setup(KEYX[5], function()
-    log.info(" -------------------------------", KEYX[5])
-    sys.publish("LED_Chx",key_irq,4,1)
+    log.warn(" -------------------------------", KEYX[5])
+    if _led.Get_Electromagnetic_ChX(4) == 1 then 
+        sys.publish("LED_Chx",key_irq,4,0)
+    elseif _led.Get_Electromagnetic_ChX(4) == 0 then
+        sys.publish("LED_Chx",key_irq,4,1)
+    end
 end, gpio.PULLUP,gpio.FALLING)
 
 -- 处理自检按键
@@ -65,7 +81,7 @@ sys.taskInit(function()
                 lock_num = 0
                 if (lock_enable_flag == 0) then
                     lock_enable_flag = 1
-                    fskv.set("LOCK_FLAG", lock_enable_flag)
+                    fskv.set("LOCK_FLAG", tostring(lock_enable_flag))
                     Self = Self_Check -- 保存自检灯状态
                     Self_Check = 0 -- 自检灯常亮
                     -- 关闭所有电磁阀、灯
@@ -75,10 +91,10 @@ sys.taskInit(function()
                     _led.LED_Chx("Lock",3,0)
                     _led.LED_Chx("Lock",4,0)
                     sys.publish("DeviceWarn_Status","Lock", 0, "1", "", "")
-                    print("锁上--------------")
+                    log.warn("锁上--------------")
                 elseif (lock_enable_flag == 1) then -- 处于加锁状态
                     lock_enable_flag = 0 -- 未锁
-                    fskv.set("LOCK_FLAG", lock_enable_flag) -- 与按键状态不一样，这个时在开机10S使用，按键保存时5S，放在一起会导致未使用就保存初始值
+                    fskv.set("LOCK_FLAG", tostring(lock_enable_flag)) -- 与按键状态不一样，这个时在开机10S使用，按键保存时5S，放在一起会导致未使用就保存初始值
                     Self_Check = Self -- 还原自检灯加锁前状态
 
                     _led.LED_Chx("Lock",1,0)
@@ -86,7 +102,7 @@ sys.taskInit(function()
                     _led.LED_Chx("Lock",3,0)
                     _led.LED_Chx("Lock",4,0)
                     sys.publish("DeviceWarn_Status","Lock", 0, "0", "", "")
-                    print("解锁--------------")
+                    log.warn("解锁--------------")
                 end
             end
         end
@@ -100,9 +116,14 @@ end)
 local function SYS_START_SET_Electromagnetic_Chx()
     --刚开机时设置系统为锁定状态
     --不需要把锁定状态上报给服务器，因为此时未联网，不需要上报
+    lock_enable_flag = tonumber(fskv.get("LOCK_FLAG"))
     sys.wait(10000)
     for i = 1,4,1 do
-        sys.publish("LED_Chx","SysOP",i,fskv.get("ElE_CHX")[i])
+        local r = crypto.trng(4)
+        local _, ir = pack.unpack(r, "I")
+        log.warn("延时",(ir%2500))
+        sys.wait((ir%2500))
+        sys.publish("LED_Chx","SysOP",i,tonumber(fskv.get("ElE_CHX")[i]))
     end
 end
 

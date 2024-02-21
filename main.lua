@@ -3,8 +3,8 @@ PROJECT = "mqttdemo"
 VERSION = "1.0.0"
 log.info("shell -- file -- main -- start")
 
-log.setLevel("INFO")
-print(log.getLevel())
+log.setLevel("WARN")
+print("log level: ",log.getLevel())
 
 -- sys库是标配
 _G.sys = require("sys")
@@ -68,6 +68,7 @@ if rtos.bsp() == "EC618" and pm and pm.PWK_MODE then
 end
 
 log.info("shell -- file -- main -- end")
+log.info("----------     sys.run     ----------")
 -- 用户代码已结束---------------------------------------------
 -- 结尾总是这一句
 sys.run()

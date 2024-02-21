@@ -8,8 +8,8 @@ local client_id = "test"
 local user_name = "YT01"
 local password = "YTMQTT"
 
-local pub_topic = "/yt/YT01/sendx"
-local sub_topic = "/yt/YT01/receivex"
+local pub_topic = "/XLK/SFS10/send"
+local sub_topic = "/XLK/SFS10/receive"
 
 local mqttc = nil
 
@@ -18,6 +18,7 @@ local mqtt_lng = ""
 
 -- 统一联网函数
 sys.taskInit(function()
+    _key_irq.Set_Self_Check(1)  -- 设备自检灯-连网络....
     local device_id = mcu.unique_id():toHex()
     -----------------------------
     -- 统一联网函数, 可自行删减
@@ -46,6 +47,7 @@ end)
 sys.taskInit(function()
     -- 等待联网
     local ret, device_id = sys.waitUntil("net_ready")
+    
     -- 下面的是mqtt的参数均可自行修改
     client_id = device_id
 
@@ -53,9 +55,9 @@ sys.taskInit(function()
     -- 上报: 设备 ---> 服务器
     -- 下发: 设备 <--- 服务器
     -- 可使用mqtt.x等客户端进行调试
-    log.info("mqtt", "pub", pub_topic)
-    log.info("mqtt", "sub", sub_topic)
-	log.info("---------------------网络已经连接成功！！")
+    log.debug("mqtt", "pub", pub_topic)
+    log.debug("mqtt", "sub", sub_topic)
+	log.warn("网络已经连接成功！！")
     -- 打印一下支持的加密套件, 通常来说, 固件已包含常见的99%的加密套件
     -- if crypto.cipher_suites then
     --     log.info("cipher", "suites", json.encode(crypto.cipher_suites()))
@@ -78,23 +80,25 @@ sys.taskInit(function()
 
     mqttc:on(function(mqtt_client, event, data, payload)
         -- 用户自定义代码
-        log.info("mqtt", "event", event, mqtt_client, data, payload)
+        log.debug("mqtt", "event", event, mqtt_client, data, payload)
         if event == "conack" then
             -- 联上了
             sys.publish("mqtt_conack")
             mqtt_client:subscribe(sub_topic)--单主题订阅
             -- 循环处理接收和发送的数据
-            
+            _key_irq.Set_Self_Check(2)  -- 设备自检灯-连网络....
             -- mqtt_client:subscribe({[topic1]=1,[topic2]=1,[topic3]=1})--多主题订阅
         elseif event == "recv" then
-            log.info("mqtt", "downlink", "topic", data, "payload", payload)
+            log.debug("mqtt", "downlink", "topic", data, "payload", payload)
             sys.publish("mqtt_payload", payload)
         elseif event == "sent" then
-            -- log.info("mqtt", "sent", "pkgid", data)
+            -- log.debug("mqtt", "sent", "pkgid", data)
         elseif event == "disconnect" then
             -- 非自动重连时,按需重启mqttc
             -- mqtt_client:connect()
+            log.info("mqtt_recon", "网络重连中...")
             sys.publish("mqtt_recon")
+            _key_irq.Set_Self_Check(1)  -- 设备自检灯-连网络....
         end
     end)
 
@@ -139,7 +143,7 @@ sys.taskInit(function()
     while true do
         local res, payload = sys.waitUntil("mqtt_send")
         if mqttc and mqttc:ready() then
-            log.info("发送的数据 -------------------------------\r\n")
+            log.debug("mqtt","发送的数据!")
 			if res == true then 
                 insertMsg(payload)
 			end
@@ -158,9 +162,9 @@ sys.taskInit(function()
                 local outMsg = table.remove(msgQuene, 1) -- 取出并删除一个元素
                 result = mqttc:publish(outMsg.t, outMsg.p, qos) -- 推送对应的mqtt消息
                 if result == false then 
-                    print("Send Message Error!","-----------------------\r\n")
+                    log.debug("Send Message Error!")
                 else
-                    print("Send Message:", outMsg.t, ":", outMsg.p,"-----------------------\r\n")
+                    log.debug("Send Message:", outMsg.t, ":", outMsg.p)
                     if outMsg.user and outMsg.user.cb then -- 如果存在回调函数
                         outMsg.user.cb(result, outMsg.user.para) -- 执行回调函数
                     end
@@ -175,13 +179,13 @@ sys.taskInit(function ()
         sys.wait(3000)
         local res, data, lat, lng = sys.waitUntil("lbsloc_result")
 
-        log.info("------xxxxxx----", res, data, lat, lng)
+        log.info("定位数据", lat, lng)
         if data == 0 then 
             mqtt_lat = lat
             mqtt_lng = lng
         end
-        log.info("lua", rtos.meminfo())
-        log.info("sys", rtos.meminfo("sys"))
+        log.debug("lua", rtos.meminfo())
+        log.debug("sys", rtos.meminfo("sys"))
     end
 end)
 

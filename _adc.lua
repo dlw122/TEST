@@ -16,9 +16,9 @@
 -- 一定要添加sys.lua !!!!
 sys = require("sys")
 
-local Temperature = "55.00"
+local Temperature = "35.00"
 local function Get_Temperature()
-    return Temperature
+    return string.format("%.1f", Temperature)
 end
 
 local rtos_bsp = rtos.bsp()
@@ -26,36 +26,21 @@ function adc_pin() -- 根据不同开发板，设置ADC编号
     if rtos_bsp == "EC618" then --Air780E开发板ADC编号
         -- 默认不开启分压,范围是0-1.2v精度高
         -- adc.setRange(adc.ADC_RANGE_3_8)
-        return 1,0,0,0,adc.CH_CPU ,adc.CH_VBAT 
+        return adc.CH_CPU ,adc.CH_VBAT 
     end
 end
-local adc_pin_0,adc_pin_1,adc_pin_2,adc_pin_3,adc_pin_temp,adc_pin_vbat=adc_pin()
+local adc_pin_temp,adc_pin_vbat=adc_pin()
 sys.taskInit(function()
 
-    if adc_pin_0 and adc_pin_0 ~= 255 then adc.open(adc_pin_0) end
-    if adc_pin_1 and adc_pin_1 ~= 255 then adc.open(adc_pin_1) end
-    if adc_pin_2 and adc_pin_2 ~= 255 then adc.open(adc_pin_2) end
-    if adc_pin_3 and adc_pin_3 ~= 255 then adc.open(adc_pin_3) end
     if adc_pin_temp and adc_pin_temp ~= 255 then adc.open(adc_pin_temp) end
     if adc_pin_vbat and adc_pin_vbat ~= 255 then adc.open(adc_pin_vbat) end
 
     -- 下面是循环打印, 接地不打印0也是正常现象
     -- ADC的精度都不会太高, 若需要高精度ADC, 建议额外添加adc芯片
     while true do
-        if adc_pin_0 and adc_pin_0 ~= 255 then
-            log.debug("adc", "adc" .. tostring(adc_pin_0), adc.get(adc_pin_0)) -- 若adc.get报nil, 改成adc.read
-        end
-        if adc_pin_1 and adc_pin_1 ~= 255 then
-            log.debug("adc", "adc" .. tostring(adc_pin_1), adc.get(adc_pin_1))
-        end
-        if adc_pin_2 and adc_pin_2 ~= 255 then
-            log.debug("adc", "adc" .. tostring(adc_pin_2), adc.get(adc_pin_2))
-        end
-        if adc_pin_3 and adc_pin_3 ~= 255 then
-            log.debug("adc", "adc" .. tostring(adc_pin_3), adc.get(adc_pin_3))
-        end
         if adc_pin_temp and adc_pin_temp ~= 255 then
-            log.debug("adc", "CPU TEMP", adc.get(adc_pin_temp))
+            Temperature = math.floor(adc.get(adc_pin_temp)) / 1000
+            log.debug("adc", "CPU TEMP", Temperature)
         end
         if adc_pin_vbat and adc_pin_vbat ~= 255 then
             log.debug("adc", "VBAT", adc.get(adc_pin_vbat))
@@ -64,10 +49,6 @@ sys.taskInit(function()
     end
 
     -- 若不再读取, 可关掉adc, 降低功耗, 非必须
-    if adc_pin_0 and adc_pin_0 ~= 255 then adc.close(adc_pin_0) end
-    if adc_pin_1 and adc_pin_1 ~= 255 then adc.close(adc_pin_1) end
-    if adc_pin_2 and adc_pin_2 ~= 255 then adc.close(adc_pin_2) end
-    if adc_pin_3 and adc_pin_3 ~= 255 then adc.close(adc_pin_3) end
     if adc_pin_temp and adc_pin_temp ~= 255 then adc.close(adc_pin_temp) end
     if adc_pin_vbat and adc_pin_vbat ~= 255 then adc.close(adc_pin_vbat) end
 

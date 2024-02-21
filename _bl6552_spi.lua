@@ -20,7 +20,9 @@ local BL6552_Elect_VA = 0
 --spi编号，请按实际情况修改！
 local spiId = 0
 --cs脚，请按需修改！
-local CSX = {gpio.setup(7, 0, gpio.PULLUP),gpio.setup(6, 0, gpio.PULLUP),gpio.setup(3, 0, gpio.PULLUP),gpio.setup(8, 0, gpio.PULLUP)}
+local CS_INIT = {gpio.setup(7, 0, gpio.PULLUP),gpio.setup(6, 0, gpio.PULLUP),gpio.setup(3, 0, gpio.PULLUP),gpio.setup(8, 0, gpio.PULLUP)}
+
+local CSX = {7,6,3,8}
 
 --------------------------------------------
 -- 计量芯片是否可正常使用  0(初始状态) 1(正常) 2(错误)
@@ -32,20 +34,6 @@ local No   = 2
 -- 计量芯片是否可正常使用  0(初始状态) 1(正常) 2(错误)
 --------------------------------------------
 local BL6552_WR_Flag_Chx = {0,0,0,0}
-
---------------------------------------------
--- 校准数据定义--需要在初始化重新设置
---------------------------------------------
-local BL6552_Coef_IK_A = 11882
-local BL6552_Coef_IK_B = 11882
-local BL6552_Coef_IK_C = 11882
-local BL6552_Coef_IK_N = 11882
-local BL6552_Coef_VK_A = 9735
-local BL6552_Coef_VK_B = 9735
-local BL6552_Coef_VK_C = 9735
-local BL6552_Coef_WATT_K = 2757 -- 分相功率系数；合相功率=SUM（分相功率）/4
-local BL6552_Coef_Energy_K = 14400 -- 分相电能累积系数；合相电能累积系数=分相电能累积系数/4
-
 --------------------------------------------
 -- 存放小于1度电的脉冲底数
 local Eng_CFCnt_A_CNT = 0
@@ -61,15 +49,15 @@ local Eng_Cal_cnt_remainder -- <1度电的脉冲底数
 
 -- 
 local function CS_L(cs)
-    CSX[cs] = 0
+    gpio.set(CSX[cs], 0)
 end
 
 --
 local function CS_H(cs)
-    CSX[cs] = 1
-    CSX[cs] = 1
-    CSX[cs] = 1
-    CSX[cs] = 1
+    gpio.set(CSX[1], 1)
+    gpio.set(CSX[2], 1)
+    gpio.set(CSX[3], 1)
+    gpio.set(CSX[4], 1)
 end
 
 
@@ -139,61 +127,31 @@ local function BL6552_CalSET_Proc(cs)
 end
 
 ------------------------------------------------------------
--- BL6552模拟电路参数下发
-------------------------------------------------------------
-local function BL6552_LoadPara(cs)
-    -- 装载芯片工作的模拟电路参数
-    bl6552_write(cs,0xE7, 0x00, 0x00, 0x03)
-    bl6552_write(cs,0xE3, 0x00, 0x00, 0x24)
-    bl6552_write(cs,0xD1, 0x00, 0x37, 0xC0)
-    bl6552_write(cs,0xD2, 0x00, 0x00, 0x00)
-    bl6552_write(cs,0xD3, 0x00, 0x00, 0x00)
-    bl6552_write(cs,0xD4, 0x00, 0x10, 0x10)
-    bl6552_write(cs,0xD5, 0x00, 0x7b, 0x40)
-    bl6552_write(cs,0xD6, 0x00, 0x00, 0x0c)
-    bl6552_write(cs,0xD7, 0x00, 0x6b, 0x1f)
-    bl6552_write(cs,0xD8, 0x00, 0x00, 0x12)
-    bl6552_write(cs,0xD9, 0x00, 0x00, 0x30)
-    bl6552_write(cs,0xDA, 0x00, 0x00, 0x05)
-end
-
-------------------------------------------------------------
 -- 根据设计的电表的参数进行上电配置，校准参数下发
 ------------------------------------------------------------
 local function BL6552_Init(cs)
     BL6552_WR_Enable(cs,1) -- 打开写保护
-    BL6552_LoadPara(cs)
     -- 设置各通道电流电压阈值
-    print("BL6552_Init ---------- ",cs)
+    log.info("BL6552_Init chx:",cs)
     local vi_setL  = bit.band(math.floor(tonumber(fskv.get("V_NUM_CHX_CONFIG")[cs]) * 130 * 9735 / 100 / 4096), 0X0000FF)
     local vi_setM1 = bit.band(math.floor(tonumber(fskv.get("I_NUM_CHX_CONFIG")[cs]) * 577 * 11882 / 100 / 4096), 0X00000F) * 16 
     local vi_setM2 = bit.rshift( bit.band( math.floor( tonumber(fskv.get("V_NUM_CHX_CONFIG")[cs]) * 130 * 9735 / 100 / 4096), 0X000F00), 8)
     local vi_setM  = vi_setM1 + vi_setM2
     local vi_setH  = bit.rshift(bit.band(math.floor(tonumber(fskv.get("I_NUM_CHX_CONFIG")[cs]) * 577 * 11882 / 100 / 4096), 0X000FF0), 4)
 
-    print("高位H-----------------", vi_setH)
-    print("中位M-----------------", vi_setM)
-    print("地位L-----------------", vi_setL)
+    log.info("H", vi_setH)
+    log.info("M", vi_setM)
+    log.info("L", vi_setL)
     bl6552_write(cs,0x8C, vi_setH, vi_setM, vi_setL) -- 250V--20A
     bl6552_write(cs,0x9A, 0xF8, 0x1F, 0xFF) -- 中断使能
-    bl6552_write(cs,0x8E, 0x04, 0x13, 0x88) -- 缺相超时检测时间设置
-    bl6552_write(cs,0x93, 0x00, 0x00, 0xc3)
+    --bl6552_write(cs,0x8E, 0x04, 0x13, 0x88) -- 缺相超时检测时间设置
+    bl6552_write(cs,0x93, 0x00, 0x00, 0xc3)  --使能ADC通道
     BL6552_CalSET_Proc(cs)
 
-    -- 电参数运算系统复位，Reg3B~2F清零
+    -- 电参数运算系统复位（外部读取寄存器），Reg3B~2F清零
     bl6552_write(cs,0x9F, 0x5a, 0x5a, 0x5a)
     sys.wait(15)
     BL6552_WR_Enable(cs,0)
-    -- 转换系数精确需要根据校准流程确定，暂根据5（30A）/5mA电流互感器，负载电阻5.1欧*2
-    -- 电压采用电阻分压200K*6+1K设置初值
-    BL6552_Coef_IK_A = 11882
-    BL6552_Coef_IK_B = 11882
-    BL6552_Coef_IK_C = 11882
-    BL6552_Coef_IK_N = 11882
-    BL6552_Coef_VK_A = 9735
-    BL6552_Coef_VK_B = 9735
-    BL6552_Coef_VK_C = 9735
-    -- BL6552_Coef_WATT_K = 2757 --分相功率系数；合相功率=SUM（分相功率）/4
     return 0
 end
 
@@ -202,7 +160,7 @@ end
 ------------------------------------------------------------
 local function BL6552_Check_(cs)
     -- 读写保护寄存器，确认是否出现异常复位情况。如果有则重新初始化,
-    print("bl6552_read", cs, 0x9E , bl6552_read(cs,0x9E))
+
     if (bl6552_read(cs,0x9E) ~= 0x005555) then
         BL6552_Init(cs)
         if (bl6552_read(cs,0x9E) ~= 0x005555) then
@@ -227,8 +185,10 @@ end
 
 local function BL6552_Elect_Proc(cs)
     --校验系数 电流 电压 有效功率
-    local _I_RMS_Correct    = 122
-    local _V_RMS_Correct    = 522
+    -- local _I_RMS_Correct    = 122
+    -- local _V_RMS_Correct    = 522
+    local _I_RMS_Correct    = 63836
+    local _V_RMS_Correct    = 10183
     local _VI_RMS_Correct   = 300
     -- 电流有效值转换
     local _IA_RMS = bl6552_read(cs,0x0F)
@@ -245,12 +205,12 @@ local function BL6552_Elect_Proc(cs)
 
     -- 数据校正 --
     -- 校准后的功率、电压、电流计算
-    _VA_RMS = math.floor(_VA_RMS) / _I_RMS_Correct
-    _VB_RMS = math.floor(_VB_RMS) / _I_RMS_Correct
-    _VC_RMS = math.floor(_VC_RMS) / _I_RMS_Correct
-    _IA_RMS = math.floor(_IA_RMS) / _V_RMS_Correct
-    _IB_RMS = math.floor(_IB_RMS) / _V_RMS_Correct
-    _IC_RMS = math.floor(_IC_RMS) / _V_RMS_Correct
+    _VA_RMS = math.floor(_VA_RMS) / _V_RMS_Correct
+    _VB_RMS = math.floor(_VB_RMS) / _V_RMS_Correct
+    _VC_RMS = math.floor(_VC_RMS) / _V_RMS_Correct
+    _IA_RMS = math.floor(_IA_RMS) / _I_RMS_Correct
+    _IB_RMS = math.floor(_IB_RMS) / _I_RMS_Correct
+    _IC_RMS = math.floor(_IC_RMS) / _I_RMS_Correct
 
     if _IA_RMS < 0.03 then _IA_RMS = 0 end
     if _IB_RMS < 0.03 then _IB_RMS = 0 end
@@ -282,7 +242,6 @@ sys.taskInit(function()
         -- spi.master,--主模式     可选，默认主
         -- spi.full--全双工       可选，默认全双工
     )
-    print("open",result)
     if result ~= 0 then--返回值为0，表示打开成功
         print("spi open error",result)
         return

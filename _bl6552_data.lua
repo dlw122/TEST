@@ -36,15 +36,17 @@ local VI_OVER_Chx = {0,0,0,0}
 -- 计量中断队列
 --------------------------------------------
 local ExtimsgQuene = {} -- 外部中断事件的队列
-local function ExtiinsertMsg(ExtiChx) -- 外部中断事件插入函数
-    table.insert(ExtimsgQuene, ExtiChx)
-end
 
 local function Check_Event_Exist(ExtiChx) -- 检测事件是否已经在队列中(中断消抖)
     for i = 1, #ExtimsgQuene, 1 do
         if ExtiChx["tChx"] == ExtimsgQuene[i]["tChx"] then return true end
     end
     return false
+end
+local function ExtiinsertMsg(ExtiChx) -- 外部中断事件插入函数
+    if Check_Event_Exist(ExtiChx)  == false then 
+        table.insert(ExtimsgQuene, ExtiChx)
+    end
 end
 
 local function waitForExtiMsg() 
@@ -69,6 +71,10 @@ local function BL6552_Update_Data_Chx(Chx)
     BL6552_Elect_IC_RMS_Chx[Chx], BL6552_Elect_VA_RMS_Chx[Chx],
     BL6552_Elect_VB_RMS_Chx[Chx], BL6552_Elect_VC_RMS_Chx[Chx],
     BL6552_Elect_VA_Chx[Chx] = _bl6552_spi.BL6552_Elect_Proc(Chx)
+    log.debug("bl6552 data:",    BL6552_Elect_IA_RMS_Chx[Chx], BL6552_Elect_IB_RMS_Chx[Chx],
+    BL6552_Elect_IC_RMS_Chx[Chx], BL6552_Elect_VA_RMS_Chx[Chx],
+    BL6552_Elect_VB_RMS_Chx[Chx], BL6552_Elect_VC_RMS_Chx[Chx],
+    BL6552_Elect_VA_Chx[Chx])
 end
 
 ----------------------------------------------------------------------
@@ -303,14 +309,15 @@ sys.taskInit(function()
     local result
     --等待BL6552芯片初始化完成
     result,BL6552_WR_Flag_Chx[1],BL6552_WR_Flag_Chx[2],BL6552_WR_Flag_Chx[3],BL6552_WR_Flag_Chx[4] = sys.waitUntil("bl6552_enable")
-    log.info("BL6552_Read_Start! -- ")
+    log.info("BL6552事件处理开始!")
+    log.info("BL6552_WR_Flag_Chx:",BL6552_WR_Flag_Chx[1],BL6552_WR_Flag_Chx[2],BL6552_WR_Flag_Chx[3],BL6552_WR_Flag_Chx[4])
     while true do
         if waitForExtiMsg() then
             while #ExtimsgQuene > 0 do -- 数组大于零？
                 sys.wait(5)  -- GIAO
                 local tData = table.remove(ExtimsgQuene, 1) -- 取出并删除一个元素  
 
-                log.info("BL6552 --------json  ",tData.tEvent,tData.tChx,tData.tData,tData.tTag)
+                log.info("BL6552事件处理",tData.tEvent,tData.tChx,tData.tData,tData.tTag)
                 -- 参数 判断
                 if BL6552_WR_Flag_Chx[tData.tChx] == 1 then --对应芯片正常
                     BL6552_Update_Data_Chx(tData.tChx)     -- 【1】更新 电压 电流 有效功率
@@ -335,7 +342,9 @@ end)
 
 -------------------------------------------- 【接收】外部事件 --------------------------------------------
 sys.taskInit(function()
-    log.info("BL6552_Event_Start! --------------------------- ")
+    sys.wait(2000) -- 等待2S再处理数据
+    ExtimsgQuene = {} -- 清空队列
+    log.info("BL6552_Event_Start!")
     while true do
         local result,Event,Chx,Data,Tag = sys.waitUntil("BL6552_Chx")
         if result then

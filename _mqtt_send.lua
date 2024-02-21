@@ -6,7 +6,7 @@ _G.sys = require("sys")
 local  mqtt_connect_flag = 0
 --联网状态  未重连 0  重连 1 
 local  mqtt_reconnect_flag = 0
-local  Device_SN      = "66666666"
+local  Device_SN      = fskv.get("Device_SN")
 
 -- 用户上传状态数据统一格式
 local function Device_Get_UserData(Myid, Mysn, MyCmd, Mychx, Mydata, Mystatus, Mytag)
@@ -42,7 +42,7 @@ local function Device_Get_Info()
         LBS= mqtt_lat.."_"..mqtt_lng ,
         ICCID = mobile.iccid(),
         RSSI = mobile.csq(),
-        Temp="29.98",
+        Temp=_adc.Get_Temperature(),
         BT="1",
     }
     local msg = json.encode(torigin)
@@ -52,9 +52,9 @@ end
 ---------------发送报警信息给服务器
 local function DeviceWarn_Status(Mycmd, Mychx, Mydata, Mystatus, Mytag) -- 供别处调用
     if mqtt_connect_flag ~= 2 then return end
-    if (_key_irq.get_lock_enable_flag() == 1) then
+    if (_key_irq.Get_lock_enable_flag() == 1) then
         sys.publish("mqtt_send",Device_Get_UserData("DeviceWarn", Device_SN,"LOCK", 0, 0))
-    elseif (_key_irq.get_lock_enable_flag() == 0) then
+    elseif (_key_irq.Get_lock_enable_flag() == 0) then
         sys.publish("mqtt_send",Device_Get_UserData("DeviceWarn", Device_SN,Mycmd, Mychx, Mydata, Mystatus, Mytag))
     end
 end
@@ -74,8 +74,10 @@ end
 ----------电磁阀状态，有报警则发送信息给服务器-5分钟扫描一次
 local function Loop_Update_Elec_Status()
     for i = 1,4,1 do
-        sys.publish("BL6552_Chx","GetChx", 1, _led.Get_Electromagnetic_ChX(i), "0") -- 插入中断事件BL6552_Chx(Event,Chx,Tag)
-    end
+        if _led.Get_Electromagnetic_ChX(i) == 1 then --电磁阀开启菜上报数据
+            sys.publish("BL6552_Chx","GetChx", i, _led.Get_Electromagnetic_ChX(i), "0") -- 插入中断事件BL6552_Chx(Event,Chx,Tag)
+        end
+    end    
 end
 
 ----------温度状态，有报警则发送信息给服务器-5分钟扫描一次
@@ -97,14 +99,15 @@ end
 
 local function Loop_Update_Task() -- 每隔一段时间定时上报CHx数据
     while true do
-        print("Loop_Update_Task:".."\n")
-        print("mqtt_connect_flag:",mqtt_connect_flag,"\n")
+        log.info("Loop_Update_Task: start")
+        log.info("mqtt_connect_flag:",mqtt_connect_flag,"\n")
         if mqtt_connect_flag == 2 then
             Loop_Update_Device_csq()
             Loop_Update_Elec_Status()
             Loop_Update_Temperature_Status()
+            sys.wait(299000) -- 总延时5min
         end
-        sys.wait(300000) -- 总延时5min
+        sys.wait(1000) -- 总延时5min
     end
 end
 
@@ -113,17 +116,20 @@ local function Loop_Update_Action_Task() -- 每隔一段时间定时上报CHx数
         sys.wait(120000)
         if mqtt_connect_flag == 2 then
             DeviceResponse_Status("Hb", 0, "", "", "") 
+            sys.wait(119000)
         end
+        sys.wait(1000) -- 总延时2min
     end
 end
 
 -- mqtt握手
 sys.taskInit( function() --设备连接mqtt后，进行握手
     mqtt_connect_flag = 0
+    
     sys.waitUntil("IP_READY")
     while true do
-
         mqtt_connect_flag = 1
+        log.info("mqtt_connect_flag = ",mqtt_connect_flag)--测试
         sys.waitUntil("mqtt_conack")
         if mqtt_connect_flag == 1 then
             -- 握手信息
@@ -136,12 +142,12 @@ sys.taskInit( function() --设备连接mqtt后，进行握手
             DeviceResponse_Status("Hb", 0, "", "", "")
             sys.wait(5000)
             --SET_Self_Check
-            if (fskv.get("LOCK_FLAG") == 1) then 
+            if (fskv.get("LOCK_FLAG") == "1") then 
                 sys.publish("DeviceWarn_Status","Lock", 0, "1", "", "")
             end
             mqtt_connect_flag = 2 -- 连接 - 握手成功
             sys.publish("mqtt_connect_flag",mqtt_connect_flag)
-            print("---------------------------------------------------mqtt_connect_flag = ",mqtt_connect_flag)--测试
+            log.warn("---------------------------------mqtt_connect_flag = ",mqtt_connect_flag)--测试
             sys.waitUntil("mqtt_recon")  --系统断网重连
         end
         
