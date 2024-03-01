@@ -27,6 +27,14 @@ end
 -----------------------------------------------
 local mqtt_lat = ""
 local mqtt_lng = ""
+
+local mqttc = "0" -- 重连标志 0 开机  1 重连
+
+local function get_mqttc()
+    return mqttc
+end
+
+
 local function Device_Get_Info()
     local torigin =
     {
@@ -36,10 +44,10 @@ local function Device_Get_Info()
         Chxs = "4",
         IOs = "2",
         HW = "V1.00",
-        FW = "V2024.01.14_test_1",
+        FW = "V2024.02.28",
         IMEI = mobile.imei(),
         IMSI = mobile.imsi(),
-        LBS= mqtt_lat.."_"..mqtt_lng ,
+        LBS= tostring(mqtt_lat).."_"..tostring(mqtt_lng) ,
         ICCID = mobile.iccid(),
         RSSI = mobile.csq(),
         Temp=_adc.Get_Temperature(),
@@ -85,15 +93,12 @@ local function Loop_Update_Temperature_Status()
         DeviceResponse_Status("Temp", 0,_adc.Get_Temperature(), "", "")  
         -- 检测板子温度是否报警
         if tonumber(fskv.get("TEMPERATURE_NUM_CONFIG")) <= (math.floor(100 * tonumber(_adc.Get_Temperature())) / 100) then
-            sys.publish("DeviceWarn_Status","Alert_TF", Chx, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
-            sys.publish("DeviceWarn_Status","Alert_TF", Chx, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
-            sys.publish("DeviceWarn_Status","Alert_TF", Chx, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
-            sys.publish("DeviceWarn_Status","Alert_TF", Chx, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
-            sys.publish("LED_Chx","AlertOP",1,0)
-            sys.publish("LED_Chx","AlertOP",2,0)
-            sys.publish("LED_Chx","AlertOP",3,0)
-            sys.publish("LED_Chx","AlertOP",4,0)
-
+            for i = 1,4,1 do
+                if _led.Get_Electromagnetic_ChX(i) == 1 then --电磁阀开启菜上报数据
+                    sys.publish("DeviceWarn_Status","Alert_TF", i, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
+                    sys.publish("LED_Chx","AlertOP",i,0)
+                end
+            end 
         end
 end
 
@@ -124,6 +129,7 @@ end
 
 -- mqtt握手
 sys.taskInit( function() --设备连接mqtt后，进行握手
+    
     mqtt_connect_flag = 0
     
     sys.waitUntil("IP_READY")
@@ -133,13 +139,13 @@ sys.taskInit( function() --设备连接mqtt后，进行握手
         sys.waitUntil("mqtt_conack")
         if mqtt_connect_flag == 1 then
             -- 握手信息
-            DeviceResponse_Status("Reg", 0, "", "", "0") 
+            DeviceResponse_Status("Reg", 0, "", mqttc, "0") 
             sys.wait(5000)
             -- 硬件消息
-            DeviceResponse_Status("Reg", 0,Device_Get_Info(), "", "2")
+            DeviceResponse_Status("Reg", 0,Device_Get_Info(), mqttc, "2")
             sys.wait(5000)
             -- 心跳消息
-            DeviceResponse_Status("Hb", 0, "", "", "")
+            DeviceResponse_Status("Hb", 0, "", mqttc, "")
             sys.wait(5000)
             --SET_Self_Check
             if (fskv.get("LOCK_FLAG") == "1") then 
@@ -147,8 +153,9 @@ sys.taskInit( function() --设备连接mqtt后，进行握手
             end
             mqtt_connect_flag = 2 -- 连接 - 握手成功
             sys.publish("mqtt_connect_flag",mqtt_connect_flag)
-            log.warn("---------------------------------mqtt_connect_flag = ",mqtt_connect_flag)--测试
+            log.debug("---------------------------------mqtt_connect_flag = ",mqtt_connect_flag)--测试
             sys.waitUntil("mqtt_recon")  --系统断网重连
+            mqttc = "1"
         end
         
     end
@@ -156,9 +163,7 @@ end)
 
 sys.taskInit(function ()
     while true do
-        sys.wait(3000)
         local res, data, lat, lng = sys.waitUntil("lbsloc_result")
-
         log.info("------xxxxxx----", res, data, lat, lng)
         if data == 0 then 
             mqtt_lat = lat
@@ -200,4 +205,5 @@ log.info("shell -- file -- mqtt_send -- end")
 return {
     DeviceWarn_Status = DeviceWarn_Status,
     DeviceResponse_Status = DeviceResponse_Status,
+    get_mqttc = get_mqttc,
 }

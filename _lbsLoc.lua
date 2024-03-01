@@ -28,7 +28,7 @@ sys.taskInit(function()
         mobile.reqCellInfo(15)
         sys.waitUntil("CELL_INFO_UPDATE", 3000)
         lbsLoc.request(getLocCb)
-        sys.wait(60000)
+        sys.wait(6000000)
     end
 end)
 

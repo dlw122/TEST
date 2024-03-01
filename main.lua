@@ -75,4 +75,10 @@ sys.run()
 -- sys.run()之后后面不要加任何语句!!!!!
 
 
---  [日期：20231230][修改：将有多通道的外设变量改为table里表示多外设]
+--  [日期：20240222]
+--_led
+--sys.timerStart(sys.publish, 62100,"BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "2")
+
+--_bl6552_data
+--if BL6552_Elect_VB_RMS_Chx[Chx] < _ZXTO_IN_NUM then ZXTO_IN_B_Chx[Chx] = 1 end
+

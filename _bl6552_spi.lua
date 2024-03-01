@@ -133,11 +133,11 @@ local function BL6552_Init(cs)
     BL6552_WR_Enable(cs,1) -- 打开写保护
     -- 设置各通道电流电压阈值
     log.info("BL6552_Init chx:",cs)
-    local vi_setL  = bit.band(math.floor(tonumber(fskv.get("V_NUM_CHX_CONFIG")[cs]) * 130 * 9735 / 100 / 4096), 0X0000FF)
-    local vi_setM1 = bit.band(math.floor(tonumber(fskv.get("I_NUM_CHX_CONFIG")[cs]) * 577 * 11882 / 100 / 4096), 0X00000F) * 16 
-    local vi_setM2 = bit.rshift( bit.band( math.floor( tonumber(fskv.get("V_NUM_CHX_CONFIG")[cs]) * 130 * 9735 / 100 / 4096), 0X000F00), 8)
+    local vi_setL  = bit.band(math.floor(tonumber(fskv.get("V_NUM_CHX_CONFIG")["_" .. tostring(cs)]) * 130 * 9735 / 100 / 4096), 0X0000FF)
+    local vi_setM1 = bit.band(math.floor(tonumber(fskv.get("I_NUM_CHX_CONFIG")["_" .. tostring(cs)]) * 577 * 11882 / 100 / 4096), 0X00000F) * 16 
+    local vi_setM2 = bit.rshift( bit.band( math.floor( tonumber(fskv.get("V_NUM_CHX_CONFIG")["_" .. tostring(cs)]) * 130 * 9735 / 100 / 4096), 0X000F00), 8)
     local vi_setM  = vi_setM1 + vi_setM2
-    local vi_setH  = bit.rshift(bit.band(math.floor(tonumber(fskv.get("I_NUM_CHX_CONFIG")[cs]) * 577 * 11882 / 100 / 4096), 0X000FF0), 4)
+    local vi_setH  = bit.rshift(bit.band(math.floor(tonumber(fskv.get("I_NUM_CHX_CONFIG")["_" .. tostring(cs)]) * 577 * 11882 / 100 / 4096), 0X000FF0), 4)
 
     log.info("H", vi_setH)
     log.info("M", vi_setM)
@@ -146,6 +146,7 @@ local function BL6552_Init(cs)
     bl6552_write(cs,0x9A, 0xF8, 0x1F, 0xFF) -- 中断使能
     --bl6552_write(cs,0x8E, 0x04, 0x13, 0x88) -- 缺相超时检测时间设置
     bl6552_write(cs,0x93, 0x00, 0x00, 0xc3)  --使能ADC通道
+    --bl6552_write(cs,0x98, 0x00, 0x92, 0x00)  --使能电量统计
     BL6552_CalSET_Proc(cs)
 
     -- 电参数运算系统复位（外部读取寄存器），Reg3B~2F清零
@@ -181,7 +182,7 @@ end
 -- 电能=BL6552_Elect_Energy_1+Eng_CFCnt_Cnt1/Energy_K 度电，0.001度电/LSB
 -- 实际使用中根据应用场景要求在EEPROM中自行保存电能数据，防止掉电丢失
 -- SPI方式通信
-------------------------------------------------------------
+------------------------------------------------------------2088
 
 local function BL6552_Elect_Proc(cs)
     --校验系数 电流 电压 有效功率
@@ -189,7 +190,8 @@ local function BL6552_Elect_Proc(cs)
     -- local _V_RMS_Correct    = 522
     local _I_RMS_Correct    = 63836
     local _V_RMS_Correct    = 10183
-    local _VI_RMS_Correct   = 300
+    local _VI_RMS_Correct   = 39
+    local _POWER_RMS_Correct   = 1000
     -- 电流有效值转换
     local _IA_RMS = bl6552_read(cs,0x0F)
     local _IB_RMS = bl6552_read(cs,0x0E)
@@ -203,6 +205,9 @@ local function BL6552_Elect_Proc(cs)
     -- 有效功率
     local _VI_RMS = bl6552_read(cs,0x25)
 
+    -- 电量
+    local _POWER_RMS = bl6552_read(cs,0x32)
+    print("_POWER_RMS ---- ---- ", _POWER_RMS)
     -- 数据校正 --
     -- 校准后的功率、电压、电流计算
     _VA_RMS = math.floor(_VA_RMS) / _V_RMS_Correct
@@ -218,9 +223,13 @@ local function BL6552_Elect_Proc(cs)
 
     -- 校准后计算功率
     _VI_RMS = math.floor(_VI_RMS) / _VI_RMS_Correct
+
+    -- 校验后的电量
+    _POWER_RMS = math.floor(_POWER_RMS) * _POWER_RMS_Correct
+    
     -- 数据校正 --
 
-    return _IA_RMS,_IB_RMS,_IC_RMS,_VA_RMS,_VB_RMS,_VC_RMS,_VI_RMS
+    return _IA_RMS,_IB_RMS,_IC_RMS,_VA_RMS,_VB_RMS,_VC_RMS,_VI_RMS,_POWER_RMS
 end
 
 -- 计量芯片复位引脚
@@ -274,4 +283,5 @@ log.info("shell -- file -- _bl6552_spi -- end")
 ------供外部文件调用的函数
 return {
     BL6552_Elect_Proc = BL6552_Elect_Proc,
+    BL6552_Init = BL6552_Init
 }

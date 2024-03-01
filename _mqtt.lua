@@ -1,7 +1,9 @@
 log.info("shell -- file -- mqtt -- start")
 
 --根据自己的服务器修改以下参数
-local mqtt_host = "access.360xlink.com"
+--local mqtt_host = "access.360xlink.com"
+local mqtt_host = "accesstest.360xlink.com"
+
 local mqtt_port = 1883
 local mqtt_isssl = false
 local client_id = "test"
@@ -57,7 +59,7 @@ sys.taskInit(function()
     -- 可使用mqtt.x等客户端进行调试
     log.debug("mqtt", "pub", pub_topic)
     log.debug("mqtt", "sub", sub_topic)
-	log.warn("网络已经连接成功！！")
+	log.debug("网络已经连接成功！！")
     -- 打印一下支持的加密套件, 通常来说, 固件已包含常见的99%的加密套件
     -- if crypto.cipher_suites then
     --     log.info("cipher", "suites", json.encode(crypto.cipher_suites()))

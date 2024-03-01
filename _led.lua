@@ -17,7 +17,7 @@ local function Set_Electromagnetic_ChX(ChX, data)
         Electromagnetic_Chx[ChX] = data
         gpio.set(LEDX[ChX], Electromagnetic_Chx[ChX])
         gpio.set(OUTX[ChX], Electromagnetic_Chx[ChX])
-        log.warn("LED开关控制","ChX",LEDX[ChX],"DATA",Electromagnetic_Chx[ChX])
+        log.debug("LED开关控制","ChX",LEDX[ChX],"DATA",Electromagnetic_Chx[ChX])
 end
 
 -- 获取电磁阀状态
@@ -29,7 +29,7 @@ local ExtimsgQuene = {} -- 外部中断事件的队列
 
 local function Check_Event_Exist(ExtiChx) -- 检测事件是否已经在队列中(中断消抖)
     for i = 1, #ExtimsgQuene, 1 do
-        if ExtiChx["tChx"] == ExtimsgQuene[i]["tChx"] then return true end
+        if ExtiChx["tChx"] == ExtimsgQuene[i]["tChx"] and ExtiChx["tEvent"] == ExtimsgQuene[i]["tEvent"] then return true end
     end
     return false
 end
@@ -62,20 +62,20 @@ sys.taskInit(function()
             while #ExtimsgQuene > 0 do -- 数组大于零？
                 sys.wait(5) -- GIAO
                 local tData = table.remove(ExtimsgQuene, 1) -- 取出并删除一个元素 
-                    log.info("LED事件处理", tData.tEvent, tData.tChx, tData.tData)
+                    log.debug("LED事件处理", tData.tEvent, tData.tChx, tData.tData)
 
                     -- 告警 -> 关闭电磁阀  （）
                     if tData.tEvent == "AlertOP" then                                             
                         Set_Electromagnetic_ChX(tData.tChx,tData.tData) -- 更新电磁阀与LED状态
-                        sys.publish("DeviceWarn_Status",tData.tEvent, 0, tData.tData, "", "")  
+                        sys.publish("DeviceWarn_Status",tData.tEvent, tData.tChx, tostring(tData.tData), "", "")  
                     end
 
                     -- 控制电磁阀  
                     if tData.tEvent == "SysOP" or tData.tEvent == "SvrOP" or tData.tEvent == "KeyOP" or tData.tEvent == "TimeOP" then                                           
-                        _timer.Elec_Timer_Chx_Clear(tData.tChx) --定时器标志清除
+                        _timer.Elec_Timer_Chx_Clear(tData.tEvent,tData.tChx,tData.tData) --定时器标志清除
                         Set_Electromagnetic_ChX(tData.tChx,tData.tData) -- 更新电磁阀与LED状态
-                        sys.publish("DeviceResponse_Status",tData.tEvent, tData.tChx, tData.tData, "", "")  
-                        --sys.timerStart(sys.publish, 2100, "BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "1")
+                        sys.publish("DeviceResponse_Status",tData.tEvent, tData.tChx, tostring(tData.tData), "", "")  
+                        sys.timerStart(sys.publish, 2100, "BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "1")
                         --sys.timerStart(sys.publish, 62100,"BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "2")
                     end
                     --输出开启时状态及功率数据上传
@@ -97,8 +97,10 @@ sys.taskInit(function()
     sys.wait(20000) -- 等待2S再处理数据
     log.info("ElE_CHX_Save_Start!","10s")
     while true do
-        fskv.set("ElE_CHX", {tostring(Electromagnetic_Chx[1]),tostring(Electromagnetic_Chx[2]),tostring(Electromagnetic_Chx[3]),tostring(Electromagnetic_Chx[4])})
-        sys.wait(10000)
+        for i = 1, 4, 1 do
+            fskv.sett("ElE_CHX","_" .. tostring(i), tostring(Electromagnetic_Chx[i]))
+            sys.wait(2500)
+        end
     end
 end)
 

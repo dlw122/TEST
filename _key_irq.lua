@@ -28,7 +28,7 @@ gpio.setup(KEYX[1] , nil)  --输入模式
 
 gpio.debounce(KEYX[2], key_timer, 1)
 gpio.setup(KEYX[2], function()
-    log.warn(" -------------------------------", KEYX[2])
+    log.debug(" -------------------------------", KEYX[2])
     if _led.Get_Electromagnetic_ChX(1) == 1 then 
         sys.publish("LED_Chx",key_irq,1,0)
     elseif _led.Get_Electromagnetic_ChX(1) == 0 then
@@ -38,7 +38,7 @@ end, gpio.PULLUP,gpio.FALLING,4)
 
 gpio.debounce(KEYX[3], key_timer, 1)
 gpio.setup(KEYX[3], function()
-    log.warn(" -------------------------------", KEYX[3])
+    log.debug(" -------------------------------", KEYX[3])
     if _led.Get_Electromagnetic_ChX(2) == 1 then 
         sys.publish("LED_Chx",key_irq,2,0)
     elseif _led.Get_Electromagnetic_ChX(2) == 0 then
@@ -48,7 +48,7 @@ end, gpio.PULLUP,gpio.FALLING,4)
 
 gpio.debounce(KEYX[4], key_timer, 1)
 gpio.setup(KEYX[4], function()
-    log.warn(" -------------------------------", KEYX[4])
+    log.debug(" -------------------------------", KEYX[4])
     if _led.Get_Electromagnetic_ChX(3) == 1 then 
         sys.publish("LED_Chx",key_irq,3,0)
     elseif _led.Get_Electromagnetic_ChX(3) == 0 then
@@ -58,7 +58,7 @@ end, gpio.PULLUP,gpio.FALLING)
 
 gpio.debounce(KEYX[5], key_timer, 1)
 gpio.setup(KEYX[5], function()
-    log.warn(" -------------------------------", KEYX[5])
+    log.debug(" -------------------------------", KEYX[5])
     if _led.Get_Electromagnetic_ChX(4) == 1 then 
         sys.publish("LED_Chx",key_irq,4,0)
     elseif _led.Get_Electromagnetic_ChX(4) == 0 then
@@ -91,7 +91,7 @@ sys.taskInit(function()
                     _led.LED_Chx("Lock",3,0)
                     _led.LED_Chx("Lock",4,0)
                     sys.publish("DeviceWarn_Status","Lock", 0, "1", "", "")
-                    log.warn("锁上--------------")
+                    log.debug("锁上--------------")
                 elseif (lock_enable_flag == 1) then -- 处于加锁状态
                     lock_enable_flag = 0 -- 未锁
                     fskv.set("LOCK_FLAG", tostring(lock_enable_flag)) -- 与按键状态不一样，这个时在开机10S使用，按键保存时5S，放在一起会导致未使用就保存初始值
@@ -102,7 +102,7 @@ sys.taskInit(function()
                     _led.LED_Chx("Lock",3,0)
                     _led.LED_Chx("Lock",4,0)
                     sys.publish("DeviceWarn_Status","Lock", 0, "0", "", "")
-                    log.warn("解锁--------------")
+                    log.debug("解锁--------------")
                 end
             end
         end
@@ -121,9 +121,9 @@ local function SYS_START_SET_Electromagnetic_Chx()
     for i = 1,4,1 do
         local r = crypto.trng(4)
         local _, ir = pack.unpack(r, "I")
-        log.warn("延时",(ir%2500))
+        log.debug("延时",(ir%2500))
         sys.wait((ir%2500))
-        sys.publish("LED_Chx","SysOP",i,tonumber(fskv.get("ElE_CHX")[i]))
+        sys.publish("LED_Chx","SysOP",i,tonumber(fskv.get("ElE_CHX")["_" .. tostring(i)]))
     end
 end
 

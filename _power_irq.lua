@@ -9,7 +9,7 @@ gpio.debounce(KEY_POWER, power_irq_timer,1)
 gpio.setup(KEY_POWER, function()
     log.info("KEY_POWER - ", KEY_POWER)
     if fskv.get("POWER_CLOSE_ENABLE_CONFIG") == "1" then
-        sys.publish("DeviceWarn_Status","Prof_PowerLost", 0, "", "", "")
+        sys.publish("DeviceWarn_Status","Alert_PowerLost", 0, "", "", "")
     end
     
 end, gpio.PULLDOWN,gpio.FALLING)
