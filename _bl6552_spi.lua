@@ -125,23 +125,24 @@ local function BL6552_CalSET_Proc(cs)
     bl6552_write(cs,0xC3, 0x00, 0x00, 0x00)
     bl6552_write(cs,0xC4, 0x00, 0x00, 0x00)
 end
-
+    -- local _I_RMS_Correct    = 122
+    -- local _V_RMS_Correct    = 522
 ------------------------------------------------------------
 -- 根据设计的电表的参数进行上电配置，校准参数下发
 ------------------------------------------------------------
 local function BL6552_Init(cs)
     BL6552_WR_Enable(cs,1) -- 打开写保护
     -- 设置各通道电流电压阈值
-    log.info("BL6552_Init chx:",cs)
-    local vi_setL  = bit.band(math.floor(tonumber(fskv.get("V_NUM_CHX_CONFIG")["_" .. tostring(cs)]) * 130 * 9735 / 100 / 4096), 0X0000FF)
-    local vi_setM1 = bit.band(math.floor(tonumber(fskv.get("I_NUM_CHX_CONFIG")["_" .. tostring(cs)]) * 577 * 11882 / 100 / 4096), 0X00000F) * 16 
-    local vi_setM2 = bit.rshift( bit.band( math.floor( tonumber(fskv.get("V_NUM_CHX_CONFIG")["_" .. tostring(cs)]) * 130 * 9735 / 100 / 4096), 0X000F00), 8)
+    log.warn("BL6552_Init chx:",cs)
+    local vi_setL  = bit.band(math.floor(tonumber(fskv.get("V_NUM_CHX_CONFIG")["_" .. tostring(cs)]) * 2.4322), 0X0000FF)
+    local vi_setM1 = bit.band(math.floor(tonumber(fskv.get("I_NUM_CHX_CONFIG")["_" .. tostring(cs)]) * 29.615), 0X00000F) * 16 
+    local vi_setM2 = bit.rshift( bit.band( math.floor( tonumber(fskv.get("V_NUM_CHX_CONFIG")["_" .. tostring(cs)]) * 2.4322), 0X000F00), 8)
     local vi_setM  = vi_setM1 + vi_setM2
-    local vi_setH  = bit.rshift(bit.band(math.floor(tonumber(fskv.get("I_NUM_CHX_CONFIG")["_" .. tostring(cs)]) * 577 * 11882 / 100 / 4096), 0X000FF0), 4)
+    local vi_setH  = bit.rshift(bit.band(math.floor(tonumber(fskv.get("I_NUM_CHX_CONFIG")["_" .. tostring(cs)]) * 29.615), 0X000FF0), 4)
 
-    log.info("H", vi_setH)
-    log.info("M", vi_setM)
-    log.info("L", vi_setL)
+    log.warn("H", vi_setH)
+    log.warn("M", vi_setM)
+    log.warn("L", vi_setL)
     bl6552_write(cs,0x8C, vi_setH, vi_setM, vi_setL) -- 250V--20A
     bl6552_write(cs,0x9A, 0xF8, 0x1F, 0xFF) -- 中断使能
     --bl6552_write(cs,0x8E, 0x04, 0x13, 0x88) -- 缺相超时检测时间设置
@@ -207,7 +208,6 @@ local function BL6552_Elect_Proc(cs)
 
     -- 电量
     local _POWER_RMS = bl6552_read(cs,0x32)
-    print("_POWER_RMS ---- ---- ", _POWER_RMS)
     -- 数据校正 --
     -- 校准后的功率、电压、电流计算
     _VA_RMS = math.floor(_VA_RMS) / _V_RMS_Correct
@@ -225,7 +225,7 @@ local function BL6552_Elect_Proc(cs)
     _VI_RMS = math.floor(_VI_RMS) / _VI_RMS_Correct
 
     -- 校验后的电量
-    _POWER_RMS = math.floor(_POWER_RMS) * _POWER_RMS_Correct
+    _POWER_RMS = _POWER_RMS/100
     
     -- 数据校正 --
 

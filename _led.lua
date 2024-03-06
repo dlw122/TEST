@@ -70,14 +70,25 @@ sys.taskInit(function()
                         sys.publish("DeviceWarn_Status",tData.tEvent, tData.tChx, tostring(tData.tData), "", "")  
                     end
 
-                    -- 控制电磁阀  
-                    if tData.tEvent == "SysOP" or tData.tEvent == "SvrOP" or tData.tEvent == "KeyOP" or tData.tEvent == "TimeOP" then                                           
+                    -- 控制电磁阀
+                    if fskv.get("LOCK_FLAG") == "0" then
+                        if tData.tEvent == "SysOP" or tData.tEvent == "SvrOP" or tData.tEvent == "KeyOP" or tData.tEvent == "TimeOP" then                                           
+                            _timer.Elec_Timer_Chx_Clear(tData.tEvent,tData.tChx,tData.tData) --定时器标志清除
+                            Set_Electromagnetic_ChX(tData.tChx,tData.tData) -- 更新电磁阀与LED状态
+                            sys.publish("DeviceResponse_Status",tData.tEvent, tData.tChx, tostring(tData.tData), "", "")  
+                            sys.timerStart(sys.publish, 2100, "BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "2")
+                            sys.timerStart(sys.publish, 60000,"BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "1")
+                        end
+                    end
+                        -- 控制电磁阀  
+                    if tData.tEvent == "Lock" then                                           
                         _timer.Elec_Timer_Chx_Clear(tData.tEvent,tData.tChx,tData.tData) --定时器标志清除
                         Set_Electromagnetic_ChX(tData.tChx,tData.tData) -- 更新电磁阀与LED状态
-                        sys.publish("DeviceResponse_Status",tData.tEvent, tData.tChx, tostring(tData.tData), "", "")  
-                        sys.timerStart(sys.publish, 2100, "BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "1")
-                        --sys.timerStart(sys.publish, 62100,"BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "2")
+                        fskv.sett("ElE_CHX","_" .. tostring(tData.tChx), tostring(tData.tData)) -- 立即保存
+                        sys.timerStart(sys.publish, 2100, "BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "2")
+                        
                     end
+
                     --输出开启时状态及功率数据上传
 
             end
@@ -95,7 +106,7 @@ local Self_Check = 0
 ---------------------------------------------------
 sys.taskInit(function()
     sys.wait(20000) -- 等待2S再处理数据
-    log.info("ElE_CHX_Save_Start!","10s")
+    log.info("ElE_CHX_Save_Start!","15s")
     while true do
         for i = 1, 4, 1 do
             fskv.sett("ElE_CHX","_" .. tostring(i), tostring(Electromagnetic_Chx[i]))

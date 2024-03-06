@@ -10,11 +10,13 @@ local int_timer = 20
 local BL6552_IRQ_EVENT = "Prof_IV" -- 事件
 
 local function bl6552_irq_init(Event,Chx)
-    gpio.debounce(INTX[Chx], int_timer)
+    gpio.debounce(INTX[Chx], int_timer,1)
     gpio.setup(INTX[Chx], function()
-        log.info("INT Chx:",Chx,"  -  GPIO:", INTX[Chx])
-        _bl6552_data.BL6552_Chx(Event,Chx,"0","0") -- 插入中断事件BL6552_Chx(Event,Chx,Data,Tag)
-    end, gpio.PULLUP)
+        log.warn("INT Chx--------------------------------------:",Chx,"  -  GPIO:", INTX[Chx])
+        
+        sys.timerStart(sys.publish, 2100, "BL6552_Chx", "Prof_IV", Chx, 0, "1")
+        --sys.publish("DeviceResponse_Status","Prof_MaxVolt", tjsondata["Chx"], tjsondata["Data"], "", "")
+    end, gpio.PULLUP,gpio.FALLING)
 end
 
 bl6552_irq_init(BL6552_IRQ_EVENT,1)

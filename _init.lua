@@ -22,7 +22,7 @@ sys.taskInit(function()
     end
     fskv.set("boottime", bootime)
     log.info("fskv-------------------------------------", fskv.get("boottime"))
-    
+
     local check = fskv.get("check")
     
     -- if fskv.get("Device_SN") == nil then
@@ -36,7 +36,7 @@ sys.taskInit(function()
         fskv.set("I_SCALE_ENABLE_CHX_CONFIG", {_1 = "1",_2 = "1",_3 = "1",_4 = "1"})
         fskv.set("I_SCALE_NUM_CHX_CONFIG",{_1 = "40",_2 = "40",_3 = "40",_4 = "40"})
         fskv.set("I_NUM_CHX_CONFIG", {_1 = "20",_2 = "20",_3 = "20",_4 = "20"})
-        fskv.set("V_NUM_CHX_CONFIG",{_1 = "250",_2 = "250",_3 = "250",_4 = "250"})
+        fskv.set("V_NUM_CHX_CONFIG",{_1 = "0.1",_2 = "250",_3 = "250",_4 = "250"})
         fskv.set("IV_NUM_ENABLE_CHX_CONFIG", {_1 = "1",_2 = "1",_3 = "1",_4 = "1"})
         fskv.set("ZXTO_ENABLE_CHX_CONFIG",{_1 = "1",_2 = "1",_3 = "1",_4 = "1"})
         fskv.set("VVVF_ENABLE_CHX_CONFIG", {_1 = "0",_2 = "0",_3 = "0",_4 = "0"})
@@ -54,7 +54,7 @@ sys.taskInit(function()
     log.info("I_SCALE_ENABLE_CHX_CONFIG ------------",fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_1"],fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_2"],fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_3"],fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_4"])
     log.info("I_SCALE_NUM_CHX_CONFIG    ------------",fskv.get("I_SCALE_NUM_CHX_CONFIG")["_1"],fskv.get("I_SCALE_NUM_CHX_CONFIG")["_2"],fskv.get("I_SCALE_NUM_CHX_CONFIG")["_3"],fskv.get("I_SCALE_NUM_CHX_CONFIG")["_4"])
     log.info("I_NUM_CHX_CONFIG          ------------",fskv.get("I_NUM_CHX_CONFIG")["_1"],fskv.get("I_NUM_CHX_CONFIG")["_2"],fskv.get("I_NUM_CHX_CONFIG")["_3"],fskv.get("I_NUM_CHX_CONFIG")["_4"])
-    log.info("V_NUM_CHX_CONFIG          ------------",fskv.get("V_NUM_CHX_CONFIG")["_1"],fskv.get("V_NUM_CHX_CONFIG")["_2"],fskv.get("V_NUM_CHX_CONFIG")["_3"],fskv.get("V_NUM_CHX_CONFIG")["_4"])
+    log.warn("V_NUM_CHX_CONFIG          ------------",fskv.get("V_NUM_CHX_CONFIG")["_1"],fskv.get("V_NUM_CHX_CONFIG")["_2"],fskv.get("V_NUM_CHX_CONFIG")["_3"],fskv.get("V_NUM_CHX_CONFIG")["_4"])
     log.info("IV_NUM_ENABLE_CHX_CONFIG  ------------",fskv.get("IV_NUM_ENABLE_CHX_CONFIG")["_1"],fskv.get("IV_NUM_ENABLE_CHX_CONFIG")["_2"],fskv.get("IV_NUM_ENABLE_CHX_CONFIG")["_3"],fskv.get("IV_NUM_ENABLE_CHX_CONFIG")["_4"])
     log.info("ZXTO_ENABLE_CHX_CONFIG    ------------",fskv.get("ZXTO_ENABLE_CHX_CONFIG")["_1"],fskv.get("ZXTO_ENABLE_CHX_CONFIG")["_2"],fskv.get("ZXTO_ENABLE_CHX_CONFIG")["_3"],fskv.get("ZXTO_ENABLE_CHX_CONFIG")["_4"])
     log.info("VVVF_ENABLE_CHX_CONFIG    ------------",fskv.get("VVVF_ENABLE_CHX_CONFIG")["_1"],fskv.get("VVVF_ENABLE_CHX_CONFIG")["_2"],fskv.get("VVVF_ENABLE_CHX_CONFIG")["_3"],fskv.get("VVVF_ENABLE_CHX_CONFIG")["_4"])

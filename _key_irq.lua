@@ -11,12 +11,6 @@ local key_irq = "KeyOP"
 -- 自检锁按下3S计时开始标志
 local lock_start_time = 0
 
--- 自检锁按下后    0-未锁   1-加锁
-local lock_enable_flag = 0
-local function Get_lock_enable_flag() 
-    return lock_enable_flag 
-end
-
 local Self_Check = 0
 -- 联网状态标识
 local function Set_Self_Check(DATA) Self_Check = DATA end
@@ -70,7 +64,7 @@ end, gpio.PULLUP,gpio.FALLING)
 sys.taskInit(function()
     local lock_num = 0
     local Self = 0
-
+    sys.wait(1000)
     while true do
         -- 自检按键按下后
         if 1 == gpio.get(KEYX[1]) then
@@ -79,30 +73,26 @@ sys.taskInit(function()
             lock_num = lock_num + 1
             if (lock_num > 30) then
                 lock_num = 0
-                if (lock_enable_flag == 0) then
-                    lock_enable_flag = 1
-                    fskv.set("LOCK_FLAG", tostring(lock_enable_flag))
+                if (fskv.get("LOCK_FLAG") == "0") then
+                    fskv.set("LOCK_FLAG", "1")
                     Self = Self_Check -- 保存自检灯状态
                     Self_Check = 0 -- 自检灯常亮
                     -- 关闭所有电磁阀、灯
-                    
                     _led.LED_Chx("Lock",1,0)
                     _led.LED_Chx("Lock",2,0)
                     _led.LED_Chx("Lock",3,0)
                     _led.LED_Chx("Lock",4,0)
                     sys.publish("DeviceWarn_Status","Lock", 0, "1", "", "")
-                    log.debug("锁上--------------")
-                elseif (lock_enable_flag == 1) then -- 处于加锁状态
-                    lock_enable_flag = 0 -- 未锁
-                    fskv.set("LOCK_FLAG", tostring(lock_enable_flag)) -- 与按键状态不一样，这个时在开机10S使用，按键保存时5S，放在一起会导致未使用就保存初始值
+                    log.debug("锁上--------------",fskv.get("LOCK_FLAG"))
+                elseif (fskv.get("LOCK_FLAG") == "1") then -- 处于加锁状态
+                    fskv.set("LOCK_FLAG", "0") -- 与按键状态不一样，这个时在开机10S使用，按键保存时5S，放在一起会导致未使用就保存初始值
                     Self_Check = Self -- 还原自检灯加锁前状态
-
                     _led.LED_Chx("Lock",1,0)
                     _led.LED_Chx("Lock",2,0)
                     _led.LED_Chx("Lock",3,0)
                     _led.LED_Chx("Lock",4,0)
                     sys.publish("DeviceWarn_Status","Lock", 0, "0", "", "")
-                    log.debug("解锁--------------")
+                    log.debug("解锁--------------",fskv.get("LOCK_FLAG"))
                 end
             end
         end
@@ -117,7 +107,7 @@ local function SYS_START_SET_Electromagnetic_Chx()
     --刚开机时设置系统为锁定状态
     --不需要把锁定状态上报给服务器，因为此时未联网，不需要上报
     lock_enable_flag = tonumber(fskv.get("LOCK_FLAG"))
-    sys.wait(10000)
+    sys.wait(15000)
     for i = 1,4,1 do
         local r = crypto.trng(4)
         local _, ir = pack.unpack(r, "I")

@@ -42,16 +42,14 @@ local function Device_Get_Info()
         Category = "Controller",
         Module = "XLK8020",
         Chxs = "4",
-        IOs = "2",
-        HW = "V1.00",
-        FW = "V2024.02.28",
+        HW = "V1.0",
+        FW = "V2024.03.6.10",
         IMEI = mobile.imei(),
         IMSI = mobile.imsi(),
         LBS= tostring(mqtt_lat).."_"..tostring(mqtt_lng) ,
         ICCID = mobile.iccid(),
-        RSSI = mobile.csq(),
-        Temp=_adc.Get_Temperature(),
-        BT="1",
+        RSSI = tostring(mobile.csq()),
+        Temp=tostring(_adc.Get_Temperature()),
     }
     local msg = json.encode(torigin)
     return msg
@@ -60,9 +58,9 @@ end
 ---------------发送报警信息给服务器
 local function DeviceWarn_Status(Mycmd, Mychx, Mydata, Mystatus, Mytag) -- 供别处调用
     if mqtt_connect_flag ~= 2 then return end
-    if (_key_irq.Get_lock_enable_flag() == 1) then
-        sys.publish("mqtt_send",Device_Get_UserData("DeviceWarn", Device_SN,"LOCK", 0, 0))
-    elseif (_key_irq.Get_lock_enable_flag() == 0) then
+    if (fskv.get("LOCK_FLAG") == "1") then
+        sys.publish("mqtt_send",Device_Get_UserData("DeviceWarn", Device_SN,"LOCK", 0, "1", "", ""))
+    elseif (fskv.get("LOCK_FLAG") == "0") then
         sys.publish("mqtt_send",Device_Get_UserData("DeviceWarn", Device_SN,Mycmd, Mychx, Mydata, Mystatus, Mytag))
     end
 end
@@ -76,15 +74,17 @@ end
 
 ----------信号强度，有报警则发送信息给服务器-5分钟扫描一次
 local function Loop_Update_Device_csq()
-    DeviceResponse_Status("Rssi", 0,  mobile.csq(), "", "")
+    DeviceResponse_Status("Rssi", 0,  tostring(mobile.csq()), "", "")
 end
 
 ----------电磁阀状态，有报警则发送信息给服务器-5分钟扫描一次
 local function Loop_Update_Elec_Status()
     for i = 1,4,1 do
-        if _led.Get_Electromagnetic_ChX(i) == 1 then --电磁阀开启菜上报数据
-            sys.publish("BL6552_Chx","GetChx", i, _led.Get_Electromagnetic_ChX(i), "0") -- 插入中断事件BL6552_Chx(Event,Chx,Tag)
-        end
+        --20240306
+        --业务分层逻辑
+        --在此，需要测量继电器的操作，【（1，提出操作请求，并附带自身状态）---->（2，处理队列）---->（3，根据状态信息做出具体操作）】
+        --例如，这里的逻辑是当电磁阀处于关闭状态，则无需测量与上报电磁阀状态，原本在【1约束】，现在改为【3约束】
+        sys.publish("BL6552_Chx","GetChx", i, _led.Get_Electromagnetic_ChX(i), "0") -- 插入中断事件BL6552_Chx(Event,Chx,Tag)
     end    
 end
 
@@ -95,7 +95,7 @@ local function Loop_Update_Temperature_Status()
         if tonumber(fskv.get("TEMPERATURE_NUM_CONFIG")) <= (math.floor(100 * tonumber(_adc.Get_Temperature())) / 100) then
             for i = 1,4,1 do
                 if _led.Get_Electromagnetic_ChX(i) == 1 then --电磁阀开启菜上报数据
-                    sys.publish("DeviceWarn_Status","Alert_TF", i, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
+                    sys.publish("DeviceWarn_Status","Alert_Hot", i, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
                     sys.publish("LED_Chx","AlertOP",i,0)
                 end
             end 
@@ -118,7 +118,6 @@ end
 
 local function Loop_Update_Action_Task() -- 每隔一段时间定时上报CHx数据
     while true do
-        sys.wait(120000)
         if mqtt_connect_flag == 2 then
             DeviceResponse_Status("Hb", 0, "", "", "") 
             sys.wait(119000)

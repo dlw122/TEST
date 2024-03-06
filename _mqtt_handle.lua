@@ -21,45 +21,47 @@ local function Mqtt_Handle_Whole(tjsondata)
     -------------------------------------------更新
     if tjsondata["Cmd"] == "Update" then --
         if tjsondata["Data"] ~= "" then
-            libfota.request(fota_cb, tjsondata["Data"])
             sys.publish("DeviceResponse_Status",tjsondata["Cmd"], tjsondata["Chx"], tjsondata["Data"], "", "")
+            libfota.request(fota_cb, tjsondata["Data"])
+            
         end
     -------------------------------------------重启
     elseif tjsondata["Cmd"] == "Restart" then --
         if tjsondata["Data"] == "" then
-            rtos.reboot()
             sys.publish("DeviceResponse_Status",tjsondata["Cmd"], tjsondata["Chx"], tjsondata["Data"], "", "")
+            rtos.reboot()
+            
         end
     -------------------------------------------复位
     elseif tjsondata["Cmd"] == "Reset" then --
         if tjsondata["Data"] == "" then
-            fskv.set("I_SCALE_ENABLE_CHX_CONFIG", {"1","1","1","1"})
-            fskv.set("I_SCALE_NUM_CHX_CONFIG", {"40","40","40","40"})
-            fskv.set("I_NUM_CHX_CONFIG", {"20","20","20","20"})
-            fskv.set("V_NUM_CHX_CONFIG", {"250","250","250","250"})
-            fskv.set("IV_NUM_ENABLE_CHX_CONFIG", {"1","1","1","1"})
-            fskv.set("ZXTO_ENABLE_CHX_CONFIG", {"1","1","1","1"})
-            fskv.set("VVVF_ENABLE_CHX_CONFIG", {"0","0","0","0"})
+            fskv.set("I_SCALE_ENABLE_CHX_CONFIG", {_1 = "1",_2 = "1",_3 = "1",_4 = "1"})
+            fskv.set("I_SCALE_NUM_CHX_CONFIG",{_1 = "40",_2 = "40",_3 = "40",_4 = "40"})
+            fskv.set("I_NUM_CHX_CONFIG", {_1 = "20",_2 = "20",_3 = "20",_4 = "20"})
+            fskv.set("V_NUM_CHX_CONFIG",{_1 = "250",_2 = "250",_3 = "250",_4 = "250"})
+            fskv.set("IV_NUM_ENABLE_CHX_CONFIG", {_1 = "1",_2 = "1",_3 = "1",_4 = "1"})
+            fskv.set("ZXTO_ENABLE_CHX_CONFIG",{_1 = "1",_2 = "1",_3 = "1",_4 = "1"})
+            fskv.set("VVVF_ENABLE_CHX_CONFIG", {_1 = "0",_2 = "0",_3 = "0",_4 = "0"})
             fskv.set("TEMPERATURE_NUM_CONFIG", "80.00")
-            fskv.set("START_Time_CHX_CONFIG", {"0","0","0","0"})
-            fskv.set("CLOSE_Time_CHX_CONFIG", {"0","0","0","0"})
-            fskv.set("Time_ENABLE_CHX_CONFIG", {"0","0","0","0"})
+            fskv.set("START_Time_CHX_CONFIG",  {_1 = "0",_2 = "0",_3 = "0",_4 = "0"})
+            fskv.set("CLOSE_Time_CHX_CONFIG",  {_1 = "0",_2 = "0",_3 = "0",_4 = "0"})
+            fskv.set("Time_ENABLE_CHX_CONFIG", {_1 = "0",_2 = "0",_3 = "0",_4 = "0"})
             fskv.set("POWER_CLOSE_ENABLE_CONFIG", "1")
-            fskv.set("ElE_CHX", {"0","0","0","0"})
+            fskv.set("ElE_CHX", {_1 = "0",_2 = "0",_3 = "0",_4 = "0"})
             fskv.set("LOCK_FLAG", "0")
             fskv.set("TimeSync_CONFIG", "")
             sys.publish("DeviceResponse_Status",tjsondata["Cmd"], tjsondata["Chx"], tjsondata["Data"], "", "")
         end
         -------------------------------------------设置温度阈值
     elseif tjsondata["Cmd"] == "Prof_MaxTemp" then
-        if tonumber(tjsondata["Data"]) > 20 and tonumber(tjsondata["Data"]) < 300 then
+        if tonumber(tjsondata["Data"]) > 0 and tonumber(tjsondata["Data"]) < 200 then
             fskv.set("TEMPERATURE_NUM_CONFIG", tjsondata["Data"])
             -- 检测板子温度是否报警
             if tonumber(fskv.get("TEMPERATURE_NUM_CONFIG")) <= (math.floor(100 * tonumber(_adc.Get_Temperature())) / 100) then
-                sys.publish("DeviceWarn_Status","Alert_TF", Chx, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
-                sys.publish("DeviceWarn_Status","Alert_TF", Chx, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
-                sys.publish("DeviceWarn_Status","Alert_TF", Chx, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
-                sys.publish("DeviceWarn_Status","Alert_TF", Chx, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
+                sys.publish("DeviceWarn_Status","Alert_Hot", Chx, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
+                sys.publish("DeviceWarn_Status","Alert_Hot", Chx, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
+                sys.publish("DeviceWarn_Status","Alert_Hot", Chx, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
+                sys.publish("DeviceWarn_Status","Alert_Hot", Chx, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
                 _led.Set_Electromagnetic_ChX(1, 0)
                 sys.publish("DeviceWarn_Status","AlertOP", 1, "", "", "")
                 _led.Set_Electromagnetic_ChX(2, 0)
@@ -98,7 +100,7 @@ local function Mqtt_Handle_Pass_Set(tjsondata)
         end
     -------------------------------------------设置电压阈值
     elseif tjsondata["Cmd"] == "Prof_MaxVolt" then --
-        if tonumber(tjsondata["Data"]) > 40 and tonumber(tjsondata["Data"]) < 350 then
+        if tonumber(tjsondata["Data"]) > 0 and tonumber(tjsondata["Data"]) < 30000 then
             fskv.sett("V_NUM_CHX_CONFIG","_" .. tostring(tjsondata["Chx"]),tjsondata["Data"])
             _bl6552_spi.BL6552_Init(tjsondata["Chx"]) --重新初始化BL6552 
             -- 状态改变即刻读取数据
@@ -106,7 +108,7 @@ local function Mqtt_Handle_Pass_Set(tjsondata)
         end
     -------------------------------------------设置电流阈值
     elseif tjsondata["Cmd"] == "Prof_MaxAmp" then --
-        if tonumber(tjsondata["Data"]) > 5 and tonumber(tjsondata["Data"]) < 100 then
+        if tonumber(tjsondata["Data"]) > 0 and tonumber(tjsondata["Data"]) < 30000 then
             fskv.sett("I_NUM_CHX_CONFIG", "_" .. tostring(tjsondata["Chx"]),tjsondata["Data"])
             _bl6552_spi.BL6552_Init(tjsondata["Chx"]) 
             sys.publish("DeviceResponse_Status","Prof_MaxAmp", tjsondata["Chx"], tjsondata["Data"], "", "")
@@ -189,9 +191,9 @@ end
 
 --------------------------------------------------------------
 local function Mqtt_Handle_Device(tjsondata)
-    if ( _key_irq.Get_lock_enable_flag() == 1) then
-        sys.publish("DeviceWarn_Status","Lock", 0, 1, "", "")
-    elseif  _key_irq.Get_lock_enable_flag()  == 0 then
+    if fskv.get("LOCK_FLAG") == "1" then
+        sys.publish("DeviceWarn_Status","Lock", 0, "1", "", "")
+    elseif  fskv.get("LOCK_FLAG") == "0" then
         Mqtt_Handle_Lock(tjsondata)
     end
 end
