@@ -58,18 +58,12 @@ local function Mqtt_Handle_Whole(tjsondata)
             fskv.set("TEMPERATURE_NUM_CONFIG", tjsondata["Data"])
             -- 检测板子温度是否报警
             if tonumber(fskv.get("TEMPERATURE_NUM_CONFIG")) <= (math.floor(100 * tonumber(_adc.Get_Temperature())) / 100) then
-                sys.publish("DeviceWarn_Status","Alert_Hot", Chx, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
-                sys.publish("DeviceWarn_Status","Alert_Hot", Chx, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
-                sys.publish("DeviceWarn_Status","Alert_Hot", Chx, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
-                sys.publish("DeviceWarn_Status","Alert_Hot", Chx, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
-                _led.Set_Electromagnetic_ChX(1, 0)
-                sys.publish("DeviceWarn_Status","AlertOP", 1, "", "", "")
-                _led.Set_Electromagnetic_ChX(2, 0)
-                sys.publish("DeviceWarn_Status","AlertOP", 2, "", "", "")
-                _led.Set_Electromagnetic_ChX(3, 0)
-                sys.publish("DeviceWarn_Status","AlertOP", 3, "", "", "")
-                _led.Set_Electromagnetic_ChX(4, 0)
-                sys.publish("DeviceWarn_Status","AlertOP", 4, "", "", "")
+                sys.publish("DeviceWarn_Status","Alert_Hot", 0, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
+                for i = 1,4,1 do
+                    if _led.Get_Electromagnetic_ChX(i) == 1 then --电磁阀开启菜上报数据
+                        sys.publish("LED_Chx","AlertOP",i,0)
+                    end
+                end 
             end
             sys.publish("DeviceResponse_Status",tjsondata["Cmd"], tjsondata["Chx"], tjsondata["Data"], "", "")
         end
@@ -91,7 +85,7 @@ local function Mqtt_Handle_Pass_Set(tjsondata)
     if tonumber(tjsondata["Data"]) == nil and string.len(tjsondata["Data"]) < 5 then
         return false
     end
-    print("0-string.len(tjsondata[\"Data\"]) ==", string.len(tjsondata["Data"]))
+    
     -------------------------------------------服务器控制按键
     if tjsondata["Cmd"] == "SvrOP" then --
         if tjsondata["Data"] == "1" or tjsondata["Data"] == "0" then

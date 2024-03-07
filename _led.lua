@@ -64,10 +64,14 @@ sys.taskInit(function()
                 local tData = table.remove(ExtimsgQuene, 1) -- 取出并删除一个元素 
                     log.debug("LED事件处理", tData.tEvent, tData.tChx, tData.tData)
 
-                    -- 告警 -> 关闭电磁阀  （）
-                    if tData.tEvent == "AlertOP" then                                             
-                        Set_Electromagnetic_ChX(tData.tChx,tData.tData) -- 更新电磁阀与LED状态
-                        sys.publish("DeviceWarn_Status",tData.tEvent, tData.tChx, tostring(tData.tData), "", "")  
+                    -- 告警 -> 关闭电磁阀  （预期状态与实际状态的综合判断）
+                    if tData.tEvent == "AlertOP" then
+                        if Get_Electromagnetic_ChX(tData.tChx) == 1 then
+                            _timer.Elec_Timer_Chx_Clear(tData.tEvent,tData.tChx,tData.tData) --定时器标志清除   
+                            Set_Electromagnetic_ChX(tData.tChx,tData.tData) -- 更新电磁阀与LED状态
+                            sys.publish("DeviceWarn_Status",tData.tEvent, tData.tChx, tostring(tData.tData), "", "")  
+                            sys.timerStart(sys.publish, 2100, "BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "2")
+                        end
                     end
 
                     -- 控制电磁阀
@@ -77,7 +81,9 @@ sys.taskInit(function()
                             Set_Electromagnetic_ChX(tData.tChx,tData.tData) -- 更新电磁阀与LED状态
                             sys.publish("DeviceResponse_Status",tData.tEvent, tData.tChx, tostring(tData.tData), "", "")  
                             sys.timerStart(sys.publish, 2100, "BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "2")
-                            sys.timerStart(sys.publish, 60000,"BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "1")
+                            if tData.tData == 1 then 
+                                sys.timerStart(sys.publish, 60000,"BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "1")
+                            end
                         end
                     end
                         -- 控制电磁阀  

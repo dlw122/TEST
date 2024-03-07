@@ -13,7 +13,14 @@ local lock_start_time = 0
 
 local Self_Check = 0
 -- 联网状态标识
-local function Set_Self_Check(DATA) Self_Check = DATA end
+local function Set_Self_Check(DATA) 
+    Self_Check = DATA
+    if fskv.get("LOCK_FLAG") == "1" then
+        Self_Check = 0 -- 自检灯常亮
+    end
+    log.debug("Self_Check",DATA)
+    
+end
 local function Get_Self_Check() return Self_Check end
 
 ------------------------------------------------------
@@ -75,7 +82,7 @@ sys.taskInit(function()
                 lock_num = 0
                 if (fskv.get("LOCK_FLAG") == "0") then
                     fskv.set("LOCK_FLAG", "1")
-                    Self = Self_Check -- 保存自检灯状态
+                    sys.wait(100)
                     Self_Check = 0 -- 自检灯常亮
                     -- 关闭所有电磁阀、灯
                     _led.LED_Chx("Lock",1,0)
@@ -86,12 +93,16 @@ sys.taskInit(function()
                     log.debug("锁上--------------",fskv.get("LOCK_FLAG"))
                 elseif (fskv.get("LOCK_FLAG") == "1") then -- 处于加锁状态
                     fskv.set("LOCK_FLAG", "0") -- 与按键状态不一样，这个时在开机10S使用，按键保存时5S，放在一起会导致未使用就保存初始值
-                    Self_Check = Self -- 还原自检灯加锁前状态
+                    sys.wait(100)
+                    Self_Check = _mqtt_send.get_mqtt_connect_flag() -- 更新灯状态
+
                     _led.LED_Chx("Lock",1,0)
                     _led.LED_Chx("Lock",2,0)
                     _led.LED_Chx("Lock",3,0)
                     _led.LED_Chx("Lock",4,0)
                     sys.publish("DeviceWarn_Status","Lock", 0, "0", "", "")
+                    
+                    
                     log.debug("解锁--------------",fskv.get("LOCK_FLAG"))
                 end
             end
@@ -106,7 +117,6 @@ end)
 local function SYS_START_SET_Electromagnetic_Chx()
     --刚开机时设置系统为锁定状态
     --不需要把锁定状态上报给服务器，因为此时未联网，不需要上报
-    lock_enable_flag = tonumber(fskv.get("LOCK_FLAG"))
     sys.wait(15000)
     for i = 1,4,1 do
         local r = crypto.trng(4)
@@ -123,7 +133,6 @@ log.info("shell -- file -- key_irq -- end")
 -- 用户代码已结束---------------------------------------------
 ------供外部文件调用的函数
 return {
-    Get_lock_enable_flag = Get_lock_enable_flag,
     Set_Self_Check       = Set_Self_Check,
     Get_Self_Check       = Get_Self_Check,
 }

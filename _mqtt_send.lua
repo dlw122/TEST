@@ -4,6 +4,9 @@ _G.sys = require("sys")
 
 --联网状态  开机未联网 0  开机联网 1  连上服务器 2
 local  mqtt_connect_flag = 0
+local function get_mqtt_connect_flag()
+    return mqtt_connect_flag
+end
 --联网状态  未重连 0  重连 1 
 local  mqtt_reconnect_flag = 0
 local  Device_SN      = fskv.get("Device_SN")
@@ -49,7 +52,7 @@ local function Device_Get_Info()
         LBS= tostring(mqtt_lat).."_"..tostring(mqtt_lng) ,
         ICCID = mobile.iccid(),
         RSSI = tostring(mobile.csq()),
-        Temp=tostring(_adc.Get_Temperature()),
+        Temp=string.format("%0.2f",(math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)),
     }
     local msg = json.encode(torigin)
     return msg
@@ -59,7 +62,7 @@ end
 local function DeviceWarn_Status(Mycmd, Mychx, Mydata, Mystatus, Mytag) -- 供别处调用
     if mqtt_connect_flag ~= 2 then return end
     if (fskv.get("LOCK_FLAG") == "1") then
-        sys.publish("mqtt_send",Device_Get_UserData("DeviceWarn", Device_SN,"LOCK", 0, "1", "", ""))
+        sys.publish("mqtt_send",Device_Get_UserData("DeviceWarn", Device_SN,"Lock", 0, "1", "", ""))
     elseif (fskv.get("LOCK_FLAG") == "0") then
         sys.publish("mqtt_send",Device_Get_UserData("DeviceWarn", Device_SN,Mycmd, Mychx, Mydata, Mystatus, Mytag))
     end
@@ -93,9 +96,9 @@ local function Loop_Update_Temperature_Status()
         DeviceResponse_Status("Temp", 0,_adc.Get_Temperature(), "", "")  
         -- 检测板子温度是否报警
         if tonumber(fskv.get("TEMPERATURE_NUM_CONFIG")) <= (math.floor(100 * tonumber(_adc.Get_Temperature())) / 100) then
+            sys.publish("DeviceWarn_Status","Alert_Hot", 0, string.format("%.2f",(math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
             for i = 1,4,1 do
                 if _led.Get_Electromagnetic_ChX(i) == 1 then --电磁阀开启菜上报数据
-                    sys.publish("DeviceWarn_Status","Alert_Hot", i, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
                     sys.publish("LED_Chx","AlertOP",i,0)
                 end
             end 
@@ -193,6 +196,10 @@ sys.taskInit(function ()
     while true do
         local res, Mycmd, Mychx, Mydata, Mystatus, Mytag = sys.waitUntil("DeviceWarn_Status")
         if res then
+            if Mycmd == "Alert_PowerLost" then --设备掉电告警特殊处理
+                sys.publish("mqtt_send",Device_Get_UserData("DeviceWarn", Device_SN,Mycmd, Mychx, Mydata, Mystatus, Mytag))
+                return true
+            end
             DeviceWarn_Status(Mycmd, Mychx, Mydata, Mystatus, Mytag)
         end
     end
@@ -205,4 +212,5 @@ return {
     DeviceWarn_Status = DeviceWarn_Status,
     DeviceResponse_Status = DeviceResponse_Status,
     get_mqttc = get_mqttc,
+    get_mqtt_connect_flag = get_mqtt_connect_flag,
 }
