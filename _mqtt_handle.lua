@@ -58,7 +58,7 @@ local function Mqtt_Handle_Whole(tjsondata)
             fskv.set("TEMPERATURE_NUM_CONFIG", tjsondata["Data"])
             -- 检测板子温度是否报警
             if tonumber(fskv.get("TEMPERATURE_NUM_CONFIG")) <= (math.floor(100 * tonumber(_adc.Get_Temperature())) / 100) then
-                sys.publish("DeviceWarn_Status","Alert_Hot", 0, tostring((math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
+                sys.publish("DeviceWarn_Status","Alert_Hot", 0, string.format("%.2f",(math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
                 for i = 1,4,1 do
                     if _led.Get_Electromagnetic_ChX(i) == 1 then --电磁阀开启菜上报数据
                         sys.publish("LED_Chx","AlertOP",i,0)

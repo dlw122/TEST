@@ -46,7 +46,7 @@ local function Device_Get_Info()
         Module = "XLK8020",
         Chxs = "4",
         HW = "V1.0",
-        FW = "V2024.03.6.10",
+        FW = "V2024.03.10.16",
         IMEI = mobile.imei(),
         IMSI = mobile.imsi(),
         LBS= tostring(mqtt_lat).."_"..tostring(mqtt_lng) ,
@@ -106,6 +106,7 @@ local function Loop_Update_Temperature_Status()
 end
 
 local function Loop_Update_Task() -- 每隔一段时间定时上报CHx数据
+    sys.wait(300000) -- 总延时5min
     while true do
         log.info("Loop_Update_Task: start")
         log.info("mqtt_connect_flag:",mqtt_connect_flag,"\n")
@@ -122,7 +123,7 @@ end
 local function Loop_Update_Action_Task() -- 每隔一段时间定时上报CHx数据
     while true do
         if mqtt_connect_flag == 2 then
-            DeviceResponse_Status("Hb", 0, "", "", "") 
+            DeviceResponse_Status("Hb", 0, "", "1", "") 
             sys.wait(119000)
         end
         sys.wait(1000) -- 总延时2min
@@ -147,7 +148,7 @@ sys.taskInit( function() --设备连接mqtt后，进行握手
             DeviceResponse_Status("Reg", 0,Device_Get_Info(), mqttc, "2")
             sys.wait(5000)
             -- 心跳消息
-            DeviceResponse_Status("Hb", 0, "", mqttc, "")
+            DeviceResponse_Status("Hb", 0, "", "1", "")
             sys.wait(5000)
             --SET_Self_Check
             if (fskv.get("LOCK_FLAG") == "1") then 

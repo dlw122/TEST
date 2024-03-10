@@ -85,21 +85,25 @@ sys.taskInit(function()
                     sys.wait(100)
                     Self_Check = 0 -- 自检灯常亮
                     -- 关闭所有电磁阀、灯
-                    _led.LED_Chx("Lock",1,0)
-                    _led.LED_Chx("Lock",2,0)
-                    _led.LED_Chx("Lock",3,0)
-                    _led.LED_Chx("Lock",4,0)
-                    sys.publish("DeviceWarn_Status","Lock", 0, "1", "", "")
+
+                    for i = 1,4,1 do
+                        if _led.Get_Electromagnetic_ChX(i) == 1 then --电磁阀开启菜上报数据
+                            sys.publish("LED_Chx","Lock",i,0)
+                        end
+                    end 
+
+                    sys.publish("DeviceWarn_Status","LockOP", 0, "1", "", "")
                     log.debug("锁上--------------",fskv.get("LOCK_FLAG"))
                 elseif (fskv.get("LOCK_FLAG") == "1") then -- 处于加锁状态
                     fskv.set("LOCK_FLAG", "0") -- 与按键状态不一样，这个时在开机10S使用，按键保存时5S，放在一起会导致未使用就保存初始值
                     sys.wait(100)
                     Self_Check = _mqtt_send.get_mqtt_connect_flag() -- 更新灯状态
 
-                    _led.LED_Chx("Lock",1,0)
-                    _led.LED_Chx("Lock",2,0)
-                    _led.LED_Chx("Lock",3,0)
-                    _led.LED_Chx("Lock",4,0)
+                    for i = 1,4,1 do
+                        if _led.Get_Electromagnetic_ChX(i) == 1 then --电磁阀开启菜上报数据
+                            sys.publish("LED_Chx","LockOP",i,0)
+                        end
+                    end 
                     sys.publish("DeviceWarn_Status","Lock", 0, "0", "", "")
                     
                     
@@ -119,11 +123,14 @@ local function SYS_START_SET_Electromagnetic_Chx()
     --不需要把锁定状态上报给服务器，因为此时未联网，不需要上报
     sys.wait(15000)
     for i = 1,4,1 do
-        local r = crypto.trng(4)
-        local _, ir = pack.unpack(r, "I")
-        log.debug("延时",(ir%2500))
-        sys.wait((ir%2500))
-        sys.publish("LED_Chx","SysOP",i,tonumber(fskv.get("ElE_CHX")["_" .. tostring(i)]))
+        if fskv.get("ElE_CHX")["_" .. tostring(i)] == "1" then 
+            local r = crypto.trng(4)
+            local _, ir = pack.unpack(r, "I")
+            log.debug("延时",(ir%2500))
+            sys.wait((ir%2500))
+        
+            sys.publish("LED_Chx","SysOP",i,tonumber(fskv.get("ElE_CHX")["_" .. tostring(i)]))
+        end
     end
 end
 

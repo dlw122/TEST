@@ -216,35 +216,38 @@ local function _MQTT_Warn_ZXTO_IN_Chx(Chx)
     if fskv.get("ZXTO_ENABLE_CHX_CONFIG")["_" .. tostring(Chx)] == "1" then -- 对应通道缺相判断使能
         --缺相使能后即可上报缺相错误
         if ZXTO_IN_A_Chx[Chx] == 1 then
-            sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, "A", "", "")
+            sys.publish("DeviceWarn_Status","Alert_ZXTO", 0, "A", "", "")
         end
         if ZXTO_IN_B_Chx[Chx] == 1 then
-            sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, "B", "", "") 
+            sys.publish("DeviceWarn_Status","Alert_ZXTO", 0, "B", "", "") 
         end
         if ZXTO_IN_C_Chx[Chx] == 1 then
+            sys.publish("DeviceWarn_Status","Alert_ZXTO", 0, "C", "", "")
+        end     
+    end
+end
+----------------------------------------------------------------------------------------------------
+local function _MQTT_Warn_ZXTO_OUT_Chx(Chx)
+    -- 先报输入缺相（电压）
+    if fskv.get("ZXTO_ENABLE_CHX_CONFIG")["_" .. tostring(Chx)] == "1" then -- 对应通道缺相判断使能
+        --缺相使能后即可上报缺相错误
+        if ZXTO_OUT_A_Chx[Chx] == 1 then
+            sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, "A", "", "")
+        end
+        if ZXTO_OUT_A_Chx[Chx] == 1 then
+            sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, "B", "", "") 
+        end
+        if ZXTO_OUT_A_Chx[Chx] == 1 then
             sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, "C", "", "")
         end 
         
-        if ZXTO_IN_A_Chx[Chx] == 1 or ZXTO_IN_B_Chx[Chx] == 1 or ZXTO_IN_C_Chx[Chx] == 1 then
+        if ZXTO_OUT_A_Chx[Chx] == 1 or ZXTO_OUT_A_Chx[Chx] == 1 or ZXTO_OUT_A_Chx[Chx] == 1 then
             -- 输出缺相（电流比例去判断）
             -- 关闭电磁阀 - 事件 同统一为 ： Event = "AlertOP"
             if fskv.get("VVVF_ENABLE_CHX_CONFIG")["_" .. tostring(Chx)] == "0" then -- 非变频模式需要关闭电磁阀
                 sys.publish("LED_Chx","AlertOP",Chx,0)
             end 
         end       
-    end
-end
-----------------------------------------------------------------------------------------------------
-local function _MQTT_Warn_ZXTO_OUT_Chx(Chx)
-    if fskv.get("ZXTO_ENABLE_CHX_CONFIG")["_" .. tostring(Chx)] == "1" then  --确实报警使能
-        -- 输出缺相（电流比例去判断）
-        if ZXTO_OUT_A_Chx[Chx] == 1 or ZXTO_OUT_B_Chx[Chx] == 1 or ZXTO_OUT_C_Chx[Chx] == 1 then
-            sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, "0", "", "")
-            if fskv.get("VVVF_ENABLE_CHX_CONFIG")["_" .. tostring(Chx)] == "0" then -- 非变频
-                -- 关闭电磁阀 - 事件 同统一为 ： Event = "AlertOP"
-                sys.publish("LED_Chx","AlertOP",Chx,0)
-            end
-        end
     end
 end
 ----------------------------------------------------------------------------------------------------

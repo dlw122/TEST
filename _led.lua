@@ -67,7 +67,7 @@ sys.taskInit(function()
                     -- 告警 -> 关闭电磁阀  （预期状态与实际状态的综合判断）
                     if tData.tEvent == "AlertOP" then
                         if Get_Electromagnetic_ChX(tData.tChx) == 1 then
-                            _timer.Elec_Timer_Chx_Clear(tData.tEvent,tData.tChx,tData.tData) --定时器标志清除   
+                            --_timer.Elec_Timer_Chx_Clear(tData.tEvent,tData.tChx,tData.tData) --定时器标志清除   
                             Set_Electromagnetic_ChX(tData.tChx,tData.tData) -- 更新电磁阀与LED状态
                             sys.publish("DeviceWarn_Status",tData.tEvent, tData.tChx, tostring(tData.tData), "", "")  
                             sys.timerStart(sys.publish, 2100, "BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "2")
@@ -77,7 +77,7 @@ sys.taskInit(function()
                     -- 控制电磁阀
                     if fskv.get("LOCK_FLAG") == "0" then
                         if tData.tEvent == "SysOP" or tData.tEvent == "SvrOP" or tData.tEvent == "KeyOP" or tData.tEvent == "TimeOP" then                                           
-                            _timer.Elec_Timer_Chx_Clear(tData.tEvent,tData.tChx,tData.tData) --定时器标志清除
+                            --_timer.Elec_Timer_Chx_Clear(tData.tEvent,tData.tChx,tData.tData) --定时器标志清除
                             Set_Electromagnetic_ChX(tData.tChx,tData.tData) -- 更新电磁阀与LED状态
                             sys.publish("DeviceResponse_Status",tData.tEvent, tData.tChx, tostring(tData.tData), "", "")  
                             sys.timerStart(sys.publish, 2100, "BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "2")
@@ -87,7 +87,7 @@ sys.taskInit(function()
                         end
                     end
                         -- 控制电磁阀  
-                    if tData.tEvent == "Lock" then                                           
+                    if tData.tEvent == "LockOP" then                                           
                         _timer.Elec_Timer_Chx_Clear(tData.tEvent,tData.tChx,tData.tData) --定时器标志清除
                         Set_Electromagnetic_ChX(tData.tChx,tData.tData) -- 更新电磁阀与LED状态
                         fskv.sett("ElE_CHX","_" .. tostring(tData.tChx), tostring(tData.tData)) -- 立即保存
@@ -115,8 +115,9 @@ sys.taskInit(function()
     log.info("ElE_CHX_Save_Start!","15s")
     while true do
         for i = 1, 4, 1 do
-            fskv.sett("ElE_CHX","_" .. tostring(i), tostring(Electromagnetic_Chx[i]))
-            sys.wait(2500)
+                fskv.sett("ElE_CHX","_" .. tostring(i), tostring(Electromagnetic_Chx[i]))
+                sys.wait(2500)
+        
         end
     end
 end)
