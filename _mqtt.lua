@@ -46,6 +46,38 @@ sys.taskInit(function()
     sys.publish("net_ready", device_id)
 end)
 
+-------------------接收队列
+local recvQuene = {}
+-------------------消息处理
+sys.taskInit(function()
+
+    while true do
+        local ret, inMsg = sys.waitUntil("mqtt_payload")
+        if ret == true then
+            local tjsondata, jsonresult, errinfo = json.decode(inMsg)
+            if jsonresult then
+                -------------------------------------------更新
+                print("Cmd = ", tjsondata["Cmd"])
+                print("Data = ", tjsondata["Data"])
+                _mqtt_handle.Mqtt_Handle(tjsondata)
+            end
+        end
+        -- while #recvQuene > 0 do -- 数组大于零？执行到将数据发送完
+        --     local inMsg = table.remove(recvQuene, 1) -- 取出并删除一个元素
+        --     local tjsondata, jsonresult, errinfo = json.decode(inMsg)
+        --     if jsonresult then
+        --         -------------------------------------------更新
+        --         print("Cmd = ", tjsondata["Cmd"])
+        --         print("Data = ", tjsondata["Data"])
+        --         _mqtt_handle.Mqtt_Handle(tjsondata)
+        --     end
+        -- end
+    end
+
+end)
+
+
+
 sys.taskInit(function()
     -- 等待联网
     local ret, device_id = sys.waitUntil("net_ready")
@@ -71,6 +103,10 @@ sys.taskInit(function()
         end
     end
 
+
+
+
+
     -------------------------------------
     -------- MQTT 演示代码 --------------
     -------------------------------------
@@ -91,8 +127,9 @@ sys.taskInit(function()
             _key_irq.Set_Self_Check(2)  -- 设备自检灯-连网络....
             -- mqtt_client:subscribe({[topic1]=1,[topic2]=1,[topic3]=1})--多主题订阅
         elseif event == "recv" then
-            log.debug("mqtt", "downlink", "topic", data, "payload", payload)
-            sys.publish("mqtt_payload", payload)
+            --table.insert(recvQuene, payload)
+            --log.debug("mqtt", "downlink", "topic", data, "payload", payload)
+            sys.publish("mqtt_payload",payload)
         elseif event == "sent" then
             -- log.debug("mqtt", "sent", "pkgid", data)
         elseif event == "disconnect" then
@@ -122,14 +159,9 @@ sys.taskInit(function()
     mqttc = nil
 end)
 
+
 -- 数据发送的消息队列
 local msgQuene = {}
-
-local function removeAllMsg()
-    while #msgQuene > 0 do -- 数组大于零？
-        local outMsg = table.remove(msgQuene, 1) -- 取出并删除一个元素
-    end
-end
 
 -- 插入发送的数据 
 local function insertMsg(payload)

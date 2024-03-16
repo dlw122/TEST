@@ -88,10 +88,15 @@ local function Mqtt_Handle_Pass_Set(tjsondata)
     
     -------------------------------------------服务器控制按键
     if tjsondata["Cmd"] == "SvrOP" then --
-        if tjsondata["Data"] == "1" or tjsondata["Data"] == "0" then
-            sys.publish("LED_Chx","SvrOP",tjsondata["Chx"], tonumber(tjsondata["Data"]))
-            sys.publish("DeviceResponse_Status",tjsondata["Cmd"], tjsondata["Chx"], tjsondata["Data"], "", "")
-        end
+
+        if fskv.get("LOCK_FLAG") == "1" then
+            sys.publish("DeviceWarn_Status","Lock", 0, "1", "", "")  
+        elseif  fskv.get("LOCK_FLAG") == "0" then 
+            if tjsondata["Data"] == "1" or tjsondata["Data"] == "0" then
+                sys.publish("LED_Chx","SvrOP",tjsondata["Chx"], tonumber(tjsondata["Data"]))
+                sys.publish("DeviceResponse_Status",tjsondata["Cmd"], tjsondata["Chx"], tjsondata["Data"], "", "")
+            end
+        end   
     -------------------------------------------设置电压阈值
     elseif tjsondata["Cmd"] == "Prof_MaxVolt" then --
         if tonumber(tjsondata["Data"]) > 0 and tonumber(tjsondata["Data"]) < 30000 then
@@ -118,7 +123,7 @@ local function Mqtt_Handle_Pass_Set(tjsondata)
         if tonumber(tjsondata["Data"]) > 0 and tonumber(tjsondata["Data"]) < 100 then
             fskv.sett("I_SCALE_NUM_CHX_CONFIG", "_" .. tostring(tjsondata["Chx"]),tjsondata["Data"])
             -- 状态改变即刻读取数据
-            sys.publish("BL6552_Chx","GetChx", tjsondata["Chx"], _led.Get_Electromagnetic_ChX(i), "0")
+            sys.publish("BL6552_Chx","GetChx", tjsondata["Chx"], _led.Get_Electromagnetic_ChX(tjsondata["Chx"]), "0")
             sys.publish("DeviceResponse_Status","Prof_MaxSCALE", tjsondata["Chx"], tjsondata["Data"], "", "")
         end
     -------------------------------------------定时
@@ -185,11 +190,7 @@ end
 
 --------------------------------------------------------------
 local function Mqtt_Handle_Device(tjsondata)
-    if fskv.get("LOCK_FLAG") == "1" then
-        sys.publish("DeviceWarn_Status","Lock", 0, "1", "", "")
-    elseif  fskv.get("LOCK_FLAG") == "0" then
-        Mqtt_Handle_Lock(tjsondata)
-    end
+    Mqtt_Handle_Lock(tjsondata)
 end
 
 --------------------------------------------------------------
@@ -198,7 +199,7 @@ local function Mqtt_Handle_TimeSync(tjsondata)
 
     if string.len(tjsondata["Data"]) == 5 then
 
-        sys.publish("TimeSync",tjsondata["Data"]) -- 系统时间已经同步
+        sys.publish("TimeSync",string.sub(tjsondata["Data"],1,5)) -- 系统时间已经同步
     end
 end
 
@@ -213,29 +214,11 @@ local function Mqtt_Handle(tjsondata)
     end
 
     if tjsondata["SN"] == Device_SN then
-        if(tjsondata["Chx"] == 0 or tjsondata["Chx"] == 1 or tjsondata["Chx"] == 2 or tjsondata["Chx"] == 3 or tjsondata["Chx"] == 4) then -- 设备ID
+        if (tjsondata["Chx"] == 0 or tjsondata["Chx"] == 1 or tjsondata["Chx"] == 2 or tjsondata["Chx"] == 3 or tjsondata["Chx"] == 4) then -- 设备ID
             Mqtt_Handle_Device(tjsondata)
         end
     end
 end
-
-sys.taskInit(function()
-    while true do
-        local res, data = sys.waitUntil("mqtt_payload")
-            log.info("接收到的数据 - ", "res = ", res, "data = ", data)
-			if res == true then 
-				-- json格式传输
-				local tjsondata, jsonresult, errinfo = json.decode(data)
-				if jsonresult then
-					-------------------------------------------
-					-------------------------------------------更新
-                    print("Cmd = ", tjsondata["Cmd"])
-                    print("Data = ", tjsondata["Data"])
-					Mqtt_Handle(tjsondata)
-				end
-			end
-    end
-end)
 
 log.info("shell -- file -- mqtt_handle -- end")
 -- 用户代码已结束---------------------------------------------

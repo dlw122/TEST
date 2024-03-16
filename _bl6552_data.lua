@@ -19,6 +19,10 @@ local BL6552_Elect_VI_RMS_Chx = {0,0,0,0}
 -- 电量
 local BL6552_Elect_POWER_Chx = {0,0,0,0}
 local BL6552_Elect_POWER_Old_Chx = {0,0,0,0}
+
+-- 电量时间
+
+local BL6552_Elect_POWER_TIME_Chx = {0,0,0,0}
 -- 芯片读写是否正常  1表示正常 2错误
 local BL6552_WR_Flag_Chx = {0,0,0,0}
 -- 输入缺相（各相电压）
@@ -36,6 +40,17 @@ local I_SCALE_Chx_Num = {0,0,0,0}
 -- 过流过压标志
 local VI_OVER_Chx = {0,0,0,0}
 --------------------------------------------
+
+
+------时间计数
+sys.taskInit(function()
+    while true do
+        sys.wait(1000)
+        for i = 1, 4, 1 do
+            BL6552_Elect_POWER_TIME_Chx[i] = BL6552_Elect_POWER_TIME_Chx[i] + 1
+        end
+    end
+end)
 
 --------------------------------------------
 -- 计量中断队列
@@ -76,6 +91,7 @@ end
 --更新 Chx 通道的 电压 电流 有功功率
 local function BL6552_Update_Data_Chx(Event,Chx,Data,Tag)
     if Data == 0 then
+
         --电流 A B C 电压 A B C 功率 电量(原始计数值)
         BL6552_Elect_IA_RMS_Chx[Chx], BL6552_Elect_IB_RMS_Chx[Chx],
         BL6552_Elect_IC_RMS_Chx[Chx], BL6552_Elect_VA_RMS_Chx[Chx],
@@ -98,15 +114,18 @@ local function BL6552_Update_Data_Chx(Event,Chx,Data,Tag)
         log.warn("电压 A B C : ", BL6552_Elect_VA_RMS_Chx[Chx], BL6552_Elect_VB_RMS_Chx[Chx], BL6552_Elect_VC_RMS_Chx[Chx])
         log.warn("功率 : ",       BL6552_Elect_VI_RMS_Chx[Chx], "电量:",                       BL6552_Elect_POWER_Chx[Chx])
     elseif Data == 1 then
+
         BL6552_Elect_IA_RMS_Chx[Chx], BL6552_Elect_IB_RMS_Chx[Chx],
         BL6552_Elect_IC_RMS_Chx[Chx], BL6552_Elect_VA_RMS_Chx[Chx],
         BL6552_Elect_VB_RMS_Chx[Chx], BL6552_Elect_VC_RMS_Chx[Chx],
         BL6552_Elect_VI_RMS_Chx[Chx],BL6552_Elect_POWER_Old_Chx[Chx] = _bl6552_spi.BL6552_Elect_Proc(Chx)
+
         if Tag == "1" then --只对电磁阀进行操作的测量采取处理电量
             --清除计数值
             BL6552_Elect_POWER_Old_Chx[Chx] = 0
             BL6552_Elect_POWER_Chx[Chx] = 0
         end
+        
         log.warn("bl6552 Chx:", Chx, "data")
         log.warn("电流 A B C : ", BL6552_Elect_IA_RMS_Chx[Chx], BL6552_Elect_IB_RMS_Chx[Chx], BL6552_Elect_IC_RMS_Chx[Chx])
         log.warn("电压 A B C : ", BL6552_Elect_VA_RMS_Chx[Chx], BL6552_Elect_VB_RMS_Chx[Chx], BL6552_Elect_VC_RMS_Chx[Chx])
@@ -156,14 +175,38 @@ end
 
 ----------------------------------------------------------------------------------------------------
 local function _BL6552_Update_ZXTO_OUT_Chx(Chx)
+    
     ZXTO_OUT_A_Chx[Chx] = 0
     ZXTO_OUT_B_Chx[Chx] = 0
     ZXTO_OUT_C_Chx[Chx] = 0
+
     --------------------------------------
-    -- 电压大小判断是否缺相
-    if BL6552_Elect_VA_RMS_Chx[Chx] - BL6552_Elect_VB_RMS_Chx[Chx] < _ZXTO_OUT_NUM then ZXTO_OUT_A_Chx[Chx] = 1 end
-    --if BL6552_Elect_IB_RMS_Chx[Chx] < _ZXTO_OUT_NUM then ZXTO_OUT_B_Chx[Chx] = 1 end
-    if BL6552_Elect_VC_RMS_Chx[Chx] - BL6552_Elect_VB_RMS_Chx[Chx] < _ZXTO_OUT_NUM then ZXTO_OUT_C_Chx[Chx] = 1 end
+    if math.floor(((BL6552_Elect_IA_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IB_RMS_Chx[Chx] + 0.05)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
+        ZXTO_OUT_A_Chx[Chx] = 1
+        
+    end
+    if math.floor(((BL6552_Elect_IB_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IA_RMS_Chx[Chx] + 0.05)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
+        ZXTO_OUT_A_Chx[Chx] = 1
+        
+    end
+    
+    if math.floor(((BL6552_Elect_IA_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IC_RMS_Chx[Chx] + 0.05)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
+        ZXTO_OUT_B_Chx[Chx] = 1
+        
+    end
+    if math.floor(((BL6552_Elect_IC_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IA_RMS_Chx[Chx] + 0.05)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
+        ZXTO_OUT_B_Chx[Chx] = 1
+        
+    end
+
+    if math.floor(((BL6552_Elect_IC_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IB_RMS_Chx[Chx] + 0.05)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
+        ZXTO_OUT_C_Chx[Chx] = 1
+    
+    end
+    if math.floor(((BL6552_Elect_IB_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IC_RMS_Chx[Chx] + 0.05)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
+        ZXTO_OUT_C_Chx[Chx] = 1
+        
+    end
     --------------------------------------
 end
 
@@ -210,6 +253,7 @@ local function _MQTT_Warn_I_SCALE_Chx(Chx)
         end
     end
 end
+
 ----------------------------------------------------------------------------------------------------
 local function _MQTT_Warn_ZXTO_IN_Chx(Chx)
     -- 先报输入缺相（电压）
@@ -223,7 +267,14 @@ local function _MQTT_Warn_ZXTO_IN_Chx(Chx)
         end
         if ZXTO_IN_C_Chx[Chx] == 1 then
             sys.publish("DeviceWarn_Status","Alert_ZXTO", 0, "C", "", "")
-        end     
+        end 
+        if ZXTO_IN_A_Chx[Chx] == 1 or ZXTO_IN_B_Chx[Chx] == 1 or ZXTO_IN_C_Chx[Chx] == 1 then
+            -- 输出缺相（电流比例去判断）
+            -- 关闭电磁阀 - 事件 同统一为 ： Event = "AlertOP"
+            if fskv.get("VVVF_ENABLE_CHX_CONFIG")["_" .. tostring(Chx)] == "0" then -- 非变频模式需要关闭电磁阀
+                sys.publish("LED_Chx","AlertOP",Chx,0)
+            end 
+        end       
     end
 end
 ----------------------------------------------------------------------------------------------------
@@ -231,19 +282,11 @@ local function _MQTT_Warn_ZXTO_OUT_Chx(Chx)
     -- 先报输入缺相（电压）
     if fskv.get("ZXTO_ENABLE_CHX_CONFIG")["_" .. tostring(Chx)] == "1" then -- 对应通道缺相判断使能
         --缺相使能后即可上报缺相错误
-        if ZXTO_OUT_A_Chx[Chx] == 1 then
-            sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, "A", "", "")
-        end
-        if ZXTO_OUT_A_Chx[Chx] == 1 then
-            sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, "B", "", "") 
-        end
-        if ZXTO_OUT_A_Chx[Chx] == 1 then
-            sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, "C", "", "")
-        end 
         
         if ZXTO_OUT_A_Chx[Chx] == 1 or ZXTO_OUT_A_Chx[Chx] == 1 or ZXTO_OUT_A_Chx[Chx] == 1 then
             -- 输出缺相（电流比例去判断）
             -- 关闭电磁阀 - 事件 同统一为 ： Event = "AlertOP"
+            sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, string.format("%.2f_%.2f_%.2f", BL6552_Elect_IA_RMS_Chx[Chx], BL6552_Elect_IB_RMS_Chx[Chx], BL6552_Elect_IC_RMS_Chx[Chx]), "", "")
             if fskv.get("VVVF_ENABLE_CHX_CONFIG")["_" .. tostring(Chx)] == "0" then -- 非变频模式需要关闭电磁阀
                 sys.publish("LED_Chx","AlertOP",Chx,0)
             end 
@@ -299,6 +342,7 @@ local function BL6552_Mqtt_Warn_Chx(Event,Chx,Data,Tag)
         if Event == "SysOP" or Event == "SvrOP" or  Event == "KeyOP" or Event == "TimeOP" then  
             -- MQTT 处理告警事件
             MQTT_Warn_ZXTO_IN_Chx(Chx)
+            --MQTT_Warn_I_SCALE_Chx(Chx)
             MQTT_Warn_ZXTO_OUT_Chx(Chx)
         end
 
@@ -333,19 +377,34 @@ local function BL6552_Mqtt_Report_Chx(Event,Chx,Data,Tag)
     Event = "GetChx"  --数据上报，统一为GetChx
     
     if Data == 1 and _led.Get_Electromagnetic_ChX(Chx) == 1 then
-        --业务逻辑
-        _data = string.format("%.2f_%.2f_%.2f_%.2f_%.2f_%.2f_%.2f",_W,_VA,_VB,_VC,_IA,_IB,_IC,_P) -- 保存数据
-        sys.publish("DeviceResponse_Status",Event, Chx, _data, "1", Tag)   -----------
-    elseif Data == 0 and _led.Get_Electromagnetic_ChX(Chx) == 0 then
+
         --业务逻辑
         if Tag == "0" then --
-            --不上报
+            _data = string.format("%.2f_%.2f_%.2f_%.2f_%.2f_%.2f_%.2f",_W,_VA,_VB,_VC,_IA,_IB,_IC,_P) -- 保存数据
+            sys.publish("DeviceResponse_Status",Event, Chx, _data, "1", Tag)   -----------
+        elseif Tag == "1" then
+            _data = string.format("%.2f_%.2f_%.2f_%.2f_%.2f_%.2f_%.2f",_W,_VA,_VB,_VC,_IA,_IB,_IC,_P) -- 保存数据
+            sys.publish("DeviceResponse_Status",Event, Chx, _data, "1", Tag)   -----------
+        elseif Tag == "2" then
+            BL6552_Elect_POWER_TIME_Chx[Chx] =  0 -- 电量计时清零
+            _data = string.format("%.2f_%.2f_%.2f_%.2f_%.2f_%.2f_%.2f",_W,_VA,_VB,_VC,_IA,_IB,_IC,_P) -- 保存数据
+            sys.publish("DeviceResponse_Status",Event, Chx, _data, "1", Tag)   -----------
+        end
+    elseif Data == 0 and _led.Get_Electromagnetic_ChX(Chx) == 0 then
+
+        --业务逻辑
+        if Tag == "0" then --
+            sys.publish("DeviceResponse_Status",Event, Chx, Data, "", Tag)
         elseif Tag == "1" then
             --不上报
         elseif Tag == "2" then
             _data = string.format("%.2f",_P) -- 保存数据
-            sys.publish("DeviceResponse_Status","GetEnergy", Chx, _data, "0", Tag)    -----------
+            local _f = math.floor((BL6552_Elect_POWER_TIME_Chx[Chx] + 30)/60) -- 计算电量分钟数
+            _data = _data .. "_" .. tostring(_f)
+            sys.publish("DeviceResponse_Status","GetEnergy", Chx, _data, "0", Tag) -----------
+            BL6552_Elect_POWER_TIME_Chx[Chx] =  0 -- 电量计时清零
         end
+        
     end
 end
 
@@ -353,7 +412,7 @@ end
 --  BL6552 -> MQTT  统一处理函数
 ----------------------------------------------------------------------
 local function Update_Chx_Status(Event, Chx, Data, Tag) 
-    if Event == "SysOP" or Event == "SvrOP" or  Event == "KeyOP" or Event == "TimeOP" or Event == "GetChx" or Event == "Lock" or Event == "Prof_IV" or Event == "AlertOP" then  
+    if Event == "SysOP" or Event == "SvrOP" or  Event == "KeyOP" or Event == "TimeOP" or Event == "GetChx" or Event == "LockOP" or Event == "Prof_IV" or Event == "AlertOP" then  
         if Chx == 1 or Chx == 2 or Chx == 3 or Chx == 4 then
             if Tag == "0" or Tag == "1" or Tag == "2" then     --上报状态方式（Tag）--后续出现其他的情况，添加处理函数即可
                 if Data == 1 or Data == 0 then

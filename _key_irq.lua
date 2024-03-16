@@ -88,11 +88,11 @@ sys.taskInit(function()
 
                     for i = 1,4,1 do
                         if _led.Get_Electromagnetic_ChX(i) == 1 then --电磁阀开启菜上报数据
-                            sys.publish("LED_Chx","Lock",i,0)
+                            sys.publish("LED_Chx","LockOP",i,0)
                         end
                     end 
 
-                    sys.publish("DeviceWarn_Status","LockOP", 0, "1", "", "")
+                    sys.publish("DeviceWarn_Status","Lock", 0, "1", "", "")
                     log.debug("锁上--------------",fskv.get("LOCK_FLAG"))
                 elseif (fskv.get("LOCK_FLAG") == "1") then -- 处于加锁状态
                     fskv.set("LOCK_FLAG", "0") -- 与按键状态不一样，这个时在开机10S使用，按键保存时5S，放在一起会导致未使用就保存初始值
@@ -101,7 +101,7 @@ sys.taskInit(function()
 
                     for i = 1,4,1 do
                         if _led.Get_Electromagnetic_ChX(i) == 1 then --电磁阀开启菜上报数据
-                            sys.publish("LED_Chx","LockOP",i,0)
+                            sys.publish("LED_Chx","Lock",i,0)
                         end
                     end 
                     sys.publish("DeviceWarn_Status","Lock", 0, "0", "", "")
@@ -131,6 +131,10 @@ local function SYS_START_SET_Electromagnetic_Chx()
         
             sys.publish("LED_Chx","SysOP",i,tonumber(fskv.get("ElE_CHX")["_" .. tostring(i)]))
         end
+    end
+    sys.wait(90000)
+    for i = 1,4,1 do
+        sys.publish("BL6552_Chx","GetChx", i, _led.Get_Electromagnetic_ChX(i), "0")
     end
 end
 

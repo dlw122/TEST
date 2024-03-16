@@ -46,7 +46,7 @@ local function Device_Get_Info()
         Module = "XLK8020",
         Chxs = "4",
         HW = "V1.0",
-        FW = "V2024.03.10.16",
+        FW = "V2024.03.15.1956",
         IMEI = mobile.imei(),
         IMSI = mobile.imsi(),
         LBS= tostring(mqtt_lat).."_"..tostring(mqtt_lng) ,
@@ -87,7 +87,9 @@ local function Loop_Update_Elec_Status()
         --业务分层逻辑
         --在此，需要测量继电器的操作，【（1，提出操作请求，并附带自身状态）---->（2，处理队列）---->（3，根据状态信息做出具体操作）】
         --例如，这里的逻辑是当电磁阀处于关闭状态，则无需测量与上报电磁阀状态，原本在【1约束】，现在改为【3约束】
-        sys.publish("BL6552_Chx","GetChx", i, _led.Get_Electromagnetic_ChX(i), "0") -- 插入中断事件BL6552_Chx(Event,Chx,Tag)
+        if _led.Get_Electromagnetic_ChX(i) == 1 then
+            sys.publish("BL6552_Chx","GetChx", i, _led.Get_Electromagnetic_ChX(i), "0") -- 插入中断事件BL6552_Chx(Event,Chx,Tag)
+        end
     end    
 end
 
@@ -106,15 +108,15 @@ local function Loop_Update_Temperature_Status()
 end
 
 local function Loop_Update_Task() -- 每隔一段时间定时上报CHx数据
-    sys.wait(300000) -- 总延时5min
     while true do
         log.info("Loop_Update_Task: start")
         log.info("mqtt_connect_flag:",mqtt_connect_flag,"\n")
         if mqtt_connect_flag == 2 then
+            sys.wait(99000)
             Loop_Update_Device_csq()
             Loop_Update_Elec_Status()
             Loop_Update_Temperature_Status()
-            sys.wait(299000) -- 总延时5min
+            sys.wait(200000) -- 总延时5min
         end
         sys.wait(1000) -- 总延时5min
     end
@@ -140,6 +142,7 @@ sys.taskInit( function() --设备连接mqtt后，进行握手
         mqtt_connect_flag = 1
         log.info("mqtt_connect_flag = ",mqtt_connect_flag)--测试
         sys.waitUntil("mqtt_conack")
+
         if mqtt_connect_flag == 1 then
             -- 握手信息
             DeviceResponse_Status("Reg", 0, "", mqttc, "0") 
@@ -150,10 +153,19 @@ sys.taskInit( function() --设备连接mqtt后，进行握手
             -- 心跳消息
             DeviceResponse_Status("Hb", 0, "", "1", "")
             sys.wait(5000)
+
             --SET_Self_Check
             if (fskv.get("LOCK_FLAG") == "1") then 
                 sys.publish("DeviceWarn_Status","Lock", 0, "1", "", "")
             end
+            --------------------
+            -- 格式化本地时间字符串
+            local time_str = os.date("%Y-%m-%d %H:%M:%S")
+            log.warn("本地时间字符串", time_str)
+            log.warn("本地时间字符串长度", #time_str)
+            log.warn("本地时间字符串小时", string.sub(time_str, 12, 16))
+            sys.publish("TimeSync",string.sub(time_str, 12, 16)) -- 系统时间已经同步
+
             mqtt_connect_flag = 2 -- 连接 - 握手成功
             sys.publish("mqtt_connect_flag",mqtt_connect_flag)
             log.debug("---------------------------------mqtt_connect_flag = ",mqtt_connect_flag)--测试

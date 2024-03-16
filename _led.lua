@@ -90,6 +90,7 @@ sys.taskInit(function()
                     if tData.tEvent == "LockOP" then                                           
                         _timer.Elec_Timer_Chx_Clear(tData.tEvent,tData.tChx,tData.tData) --定时器标志清除
                         Set_Electromagnetic_ChX(tData.tChx,tData.tData) -- 更新电磁阀与LED状态
+                        sys.publish("DeviceResponse_Status",tData.tEvent, tData.tChx, tostring(tData.tData), "", "")  
                         fskv.sett("ElE_CHX","_" .. tostring(tData.tChx), tostring(tData.tData)) -- 立即保存
                         sys.timerStart(sys.publish, 2100, "BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "2")
                         

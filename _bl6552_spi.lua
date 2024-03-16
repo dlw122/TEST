@@ -225,8 +225,8 @@ local function BL6552_Elect_Proc(cs)
     _VI_RMS = math.floor(_VI_RMS) / _VI_RMS_Correct
 
     -- 校验后的电量
-    _POWER_RMS = _POWER_RMS/100
-    
+    -- _POWER_RMS = _POWER_RMS/100
+    _POWER_RMS = _POWER_RMS/2000
     -- 数据校正 --
 
     return _IA_RMS,_IB_RMS,_IC_RMS,_VA_RMS,_VB_RMS,_VC_RMS,_VI_RMS,_POWER_RMS
