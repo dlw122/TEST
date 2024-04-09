@@ -39,6 +39,16 @@ end
 
 
 local function Device_Get_Info()
+    
+    -- 获取Lua版本信息
+    local verinfo = string.match(_VERSION, "%d+%.%d+%.%d+")
+    if verinfo then
+        local year, month, day = string.match(verinfo, "(%d+)/(%d+)/(%d+)")
+        print("编译日期:", year, month, day)
+    else
+        print("无法获取编译日期")
+    end
+
     local torigin =
     {
         Vendor = "66",
@@ -46,7 +56,7 @@ local function Device_Get_Info()
         Module = "XLK8020",
         Chxs = "4",
         HW = "V1.0",
-        FW = "V2024.03.15.1956",
+        FW = "V2024.04.09.2306",
         IMEI = mobile.imei(),
         IMSI = mobile.imsi(),
         LBS= tostring(mqtt_lat).."_"..tostring(mqtt_lng) ,

@@ -350,9 +350,12 @@ local function BL6552_Mqtt_Warn_Chx(Event,Chx,Data,Tag)
     if Data == 1 and _led.Get_Electromagnetic_ChX(Chx) == 1 then
         if Event == "SysOP" or Event == "SvrOP" or  Event == "KeyOP" or Event == "TimeOP" then  
             -- MQTT 处理告警事件
-            MQTT_Warn_ZXTO_IN_Chx(Chx)
-            --MQTT_Warn_I_SCALE_Chx(Chx)
-            MQTT_Warn_ZXTO_OUT_Chx(Chx)
+            if Tag == "2" then
+                MQTT_Warn_ZXTO_IN_Chx(Chx)
+                MQTT_Warn_ZXTO_OUT_Chx(Chx)
+            elseif Tag == "1" then
+                MQTT_Warn_I_SCALE_Chx(Chx)
+            end
         end
 
         if Event == "GetChx" then  

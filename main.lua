@@ -67,6 +67,8 @@ if rtos.bsp() == "EC618" and pm and pm.PWK_MODE then
     pm.power(pm.PWK_MODE, false)
 end
 
+
+
 log.info("shell -- file -- main -- end")
 log.info("----------     sys.run     ----------")
 -- 用户代码已结束---------------------------------------------
