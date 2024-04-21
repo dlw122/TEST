@@ -47,6 +47,10 @@ local Eng_Cal_Energy001 -- 1度以上的电累积
 local Eng_Cal_cnt_remainder -- <1度电的脉冲底数
 --------------------------------------------
 
+------------------------------------------test data
+local function test_data(Chx)
+    return  BL6552_WR_Flag_Chx[Chx]
+end
 -- 
 local function CS_L(cs)
     gpio.set(CSX[cs], 0)
@@ -283,5 +287,6 @@ log.info("shell -- file -- _bl6552_spi -- end")
 ------供外部文件调用的函数
 return {
     BL6552_Elect_Proc = BL6552_Elect_Proc,
-    BL6552_Init = BL6552_Init
+    BL6552_Init = BL6552_Init,
+    test_data = test_data
 }

@@ -45,7 +45,7 @@ _key_irq = require("_key_irq")
 
 --初始化串口
 _uart  = require("_uart")
-
+_uart  = require("_uart_debug")
 --初始化掉电中断
 _power_irq  = require("_power_irq")
 

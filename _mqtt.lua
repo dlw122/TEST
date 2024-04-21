@@ -1,8 +1,8 @@
 log.info("shell -- file -- mqtt -- start")
 
 --根据自己的服务器修改以下参数
---local mqtt_host = "access.360xlink.com"
-local mqtt_host = "accesstest.360xlink.com"
+--local mqtt_host = "accesstest.360xlink.com"
+--local mqtt_host = "m2m.iyhl.com.my"
 
 local mqtt_port = 1883
 local mqtt_isssl = false
@@ -110,7 +110,11 @@ sys.taskInit(function()
     -------------------------------------
     -------- MQTT 演示代码 --------------
     -------------------------------------
-    mqttc = mqtt.create(nil, mqtt_host, mqtt_port, mqtt_isssl, ca_file)
+    local mqtt_host = fskv.get("MQTT_HOST")
+    if mqtt_host == nil then
+        mqtt_host = "localhost"
+    end
+    mqttc = mqtt.create(nil,mqtt_host , mqtt_port, mqtt_isssl, ca_file)
 
     mqttc:auth(client_id,user_name,password) -- client_id必填,其余选填
     -- mqttc:keepalive(240) -- 默认值240s

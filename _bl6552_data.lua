@@ -41,6 +41,13 @@ local I_SCALE_Chx_Num = {0,0,0,0}
 local VI_OVER_Chx = {0,0,0,0}
 --------------------------------------------
 
+----------------------------------------test获取电流电压
+local function test_data(Chx)
+    return BL6552_Elect_IA_RMS_Chx[Chx], BL6552_Elect_IB_RMS_Chx[Chx],
+            BL6552_Elect_IC_RMS_Chx[Chx], BL6552_Elect_VA_RMS_Chx[Chx],
+            BL6552_Elect_VB_RMS_Chx[Chx], BL6552_Elect_VC_RMS_Chx[Chx],
+            BL6552_Elect_VI_RMS_Chx[Chx]
+end
 
 ------时间计数
 sys.taskInit(function()
@@ -497,5 +504,6 @@ end)
 log.info("shell -- file -- _bl6552_data -- end")
 ------供外部文件调用的函数
 return {
-    BL6552_Chx = BL6552_Chx
+    BL6552_Chx = BL6552_Chx,
+    test_data  = test_data
 }

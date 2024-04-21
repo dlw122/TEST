@@ -53,10 +53,10 @@ local function Device_Get_Info()
     {
         Vendor = "66",
         Category = "Controller",
-        Module = "XLK8020",
+        Module = fskv.get("Module"),
         Chxs = "4",
-        HW = "V1.0",
-        FW = "V2024.04.09.2306",
+        HW = fskv.get("HW"),
+        FW = fskv.get("FW"),
         IMEI = mobile.imei(),
         IMSI = mobile.imsi(),
         LBS= tostring(mqtt_lat).."_"..tostring(mqtt_lng) ,
