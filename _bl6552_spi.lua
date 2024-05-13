@@ -193,10 +193,10 @@ local function BL6552_Elect_Proc(cs)
     --校验系数 电流 电压 有效功率
     -- local _I_RMS_Correct    = 122
     -- local _V_RMS_Correct    = 522
-    local _I_RMS_Correct    = 63836
-    local _V_RMS_Correct    = 10183
-    local _VI_RMS_Correct   = 39
-    local _POWER_RMS_Correct   = 1000
+    local _I_RMS_Correct    = 63836*2
+    local _V_RMS_Correct    = 10044
+    local _VI_RMS_Correct   = 79
+    local _POWER_RMS_Correct   = 4000
     -- 电流有效值转换
     local _IA_RMS = bl6552_read(cs,0x0F)
     local _IB_RMS = bl6552_read(cs,0x0E)
@@ -230,7 +230,7 @@ local function BL6552_Elect_Proc(cs)
 
     -- 校验后的电量
     -- _POWER_RMS = _POWER_RMS/100
-    _POWER_RMS = _POWER_RMS/2000
+    _POWER_RMS = _POWER_RMS/_POWER_RMS_Correct
     -- 数据校正 --
 
     return _IA_RMS,_IB_RMS,_IC_RMS,_VA_RMS,_VB_RMS,_VC_RMS,_VI_RMS,_POWER_RMS

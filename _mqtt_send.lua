@@ -48,12 +48,16 @@ local function Device_Get_Info()
     else
         print("无法获取编译日期")
     end
-
+    local Mod = fskv.get("Module")
+    if Mod == nil then
+        fskv.set("Module", "XLK8025")
+        Mod = fskv.get("Module")
+    end
     local torigin =
     {
         Vendor = "66",
         Category = "Controller",
-        Module = fskv.get("Module"),
+        Module = Mod,
         Chxs = "4",
         HW = fskv.get("HW"),
         FW = fskv.get("FW"),

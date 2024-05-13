@@ -177,6 +177,22 @@ local function Mqtt_Handle_Pass_Enable(tjsondata)
     end
 end
 
+local function Mqtt_Handle_Pass_Get(tjsondata)
+    if tjsondata["Chx"] ~= 1 and tjsondata["Chx"] ~= 2 and tjsondata["Chx"] ~= 3 and tjsondata["Chx"] ~= 4 then
+        return false
+    end
+
+    if tjsondata["Data"] ~= "1" then
+        return false
+    end
+    ------------------------------------------- 获取功率电压电流
+    if tjsondata["Cmd"] == "GetChx_WVIP" and tjsondata["Data"] == "1" then
+        local _IA,_IB,_IC,_VA,_VB,_VC,_W,_P = _bl6552_data.BL6552_Data_Chx(tjsondata["Chx"]) 
+        sys.publish("DeviceResponse_Status","GetChx_WVIP", tjsondata["Chx"], string.format("%.2f_%.2f_%.2f_%.2f_%.2f_%.2f_%.2f",_W,_VA,_VB,_VC,_IA,_IB,_IC,_P), "", "")
+    end
+end
+
+--BL6552_Data_Chx
 local function Mqtt_Handle_Lock(tjsondata)
     print("Mqtt_Handle_Lock \r\n")
     print("SN = ", tjsondata["SN"])
@@ -185,7 +201,7 @@ local function Mqtt_Handle_Lock(tjsondata)
     Mqtt_Handle_Whole(tjsondata)
     Mqtt_Handle_Pass_Set(tjsondata)
     Mqtt_Handle_Pass_Enable(tjsondata)
-    
+    Mqtt_Handle_Pass_Get(tjsondata)
 end
 
 --------------------------------------------------------------

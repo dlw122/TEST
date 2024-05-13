@@ -505,5 +505,6 @@ log.info("shell -- file -- _bl6552_data -- end")
 ------供外部文件调用的函数
 return {
     BL6552_Chx = BL6552_Chx,
-    test_data  = test_data
+    test_data  = test_data,
+    BL6552_Data_Chx = BL6552_Data_Chx
 }

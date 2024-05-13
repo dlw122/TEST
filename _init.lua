@@ -50,8 +50,10 @@ sys.taskInit(function()
         fskv.set("TimeSync_CONFIG", "")
         log.info("fskv------------init!")
     end
-    fskv.set("HW", "V01.00")
-    fskv.set("FW", "V04.22")
+    fskv.set("HW", "V01.01")
+    fskv.set("FW", "V05.13")
+
+    
     log.info("Device_SN                 ------------",fskv.get("Device_SN"))
     log.warn("I_SCALE_ENABLE_CHX_CONFIG ------------",fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_1"],fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_2"],fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_3"],fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_4"])
     log.warn("I_SCALE_NUM_CHX_CONFIG    ------------",fskv.get("I_SCALE_NUM_CHX_CONFIG")["_1"],fskv.get("I_SCALE_NUM_CHX_CONFIG")["_2"],fskv.get("I_SCALE_NUM_CHX_CONFIG")["_3"],fskv.get("I_SCALE_NUM_CHX_CONFIG")["_4"])
