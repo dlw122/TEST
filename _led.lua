@@ -17,6 +17,7 @@ local function Set_Electromagnetic_ChX(ChX, data)
         Electromagnetic_Chx[ChX] = data
         gpio.set(LEDX[ChX], Electromagnetic_Chx[ChX])
         gpio.set(OUTX[ChX], Electromagnetic_Chx[ChX])
+        fskv.sett("ElE_CHX","_" .. tostring(ChX), tostring(Electromagnetic_Chx[ChX])) -- 立即保存
         log.debug("LED开关控制","ChX",LEDX[ChX],"DATA",Electromagnetic_Chx[ChX])
 end
 
@@ -109,19 +110,19 @@ local Self_Check = 0
 
 
 ---------------------------------------------------
--- 保留的电磁阀状态
+-- 保留的电磁阀状态 20240515 改为立即保存
 ---------------------------------------------------
-sys.taskInit(function()
-    sys.wait(20000) -- 等待2S再处理数据
-    log.info("ElE_CHX_Save_Start!","15s")
-    while true do
-        for i = 1, 4, 1 do
-                fskv.sett("ElE_CHX","_" .. tostring(i), tostring(Electromagnetic_Chx[i]))
-                sys.wait(2500)
+-- sys.taskInit(function()
+--     sys.wait(20000) -- 等待2S再处理数据
+--     log.info("ElE_CHX_Save_Start!","15s")
+--     while true do
+--         for i = 1, 4, 1 do
+--                 fskv.sett("ElE_CHX","_" .. tostring(i), tostring(Electromagnetic_Chx[i]))
+--                 sys.wait(2500)
         
-        end
-    end
-end)
+--         end
+--     end
+-- end)
 
 -------------------------------------------- 【接收】外部事件 --------------------------------------------
 sys.taskInit(function()

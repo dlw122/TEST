@@ -73,6 +73,15 @@ local function Mqtt_Handle_Whole(tjsondata)
             fskv.set("POWER_CLOSE_ENABLE_CONFIG",tjsondata["Data"])
             sys.publish("DeviceResponse_Status","Prof_PowerLost", tjsondata["Chx"], tjsondata["Data"], "", "")
         end
+    elseif tjsondata["Cmd"] == "Set_Server_Addr" then --
+        if tjsondata["Data"] == "0" then 
+            fskv.set("MQTT_HOST", "accesstest.360xlink.com") --国内 测试版
+
+        elseif tjsondata["Data"] == "1" then 
+            fskv.set("MQTT_HOST", "m2m.iyhl.com.my") --国外 正式版
+        
+        end
+        sys.publish("DeviceResponse_Status","Set_Server_Addr", tjsondata["Chx"], tjsondata["Data"], "", "")
     end
     return true
 end
@@ -137,8 +146,7 @@ local function Mqtt_Handle_Pass_Set(tjsondata)
         if string.len(tjsondata["Data"]) % 5 == 0 then
             fskv.sett("CLOSE_Time_CHX_CONFIG", "_" .. tostring(tjsondata["Chx"]),tjsondata["Data"])
             sys.publish("DeviceResponse_Status","Prof_TimeOff", tjsondata["Chx"], tjsondata["Data"], "", "")
-        end
-        
+        end  
     end
 end
 
@@ -188,7 +196,7 @@ local function Mqtt_Handle_Pass_Get(tjsondata)
     ------------------------------------------- 获取功率电压电流
     if tjsondata["Cmd"] == "GetChx_WVIP" and tjsondata["Data"] == "1" then
         local _IA,_IB,_IC,_VA,_VB,_VC,_W,_P = _bl6552_data.BL6552_Data_Chx(tjsondata["Chx"]) 
-        sys.publish("DeviceResponse_Status","GetChx_WVIP", tjsondata["Chx"], string.format("%.2f_%.2f_%.2f_%.2f_%.2f_%.2f_%.2f",_W,_VA,_VB,_VC,_IA,_IB,_IC,_P), "", "")
+        sys.publish("DeviceResponse_Status","GetChx_WVIP", tjsondata["Chx"], string.format("%.2f_%.2f_%.2f_%.2f_%.2f_%.2f_%.2f_%.2f",_W,_VA,_VB,_VC,_IA,_IB,_IC,_P), "", "")
     end
 end
 

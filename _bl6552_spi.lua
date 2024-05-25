@@ -195,7 +195,7 @@ local function BL6552_Elect_Proc(cs)
     -- local _V_RMS_Correct    = 522
     local _I_RMS_Correct    = 63836*2
     local _V_RMS_Correct    = 10044
-    local _VI_RMS_Correct   = 79
+    local _VI_RMS_Correct   = 40
     local _POWER_RMS_Correct   = 4000
     -- 电流有效值转换
     local _IA_RMS = bl6552_read(cs,0x0F)

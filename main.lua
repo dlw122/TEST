@@ -62,6 +62,9 @@ _mqtt_handle    = require ("_mqtt_handle")
 --初始化基站定位
 _lbsLoc  = require("_lbsLoc")
 
+-- 打印根分区的信息
+log.info("fsstat--------------------------------", fs.fsstat("/"))
+
 -- Air780E的AT固件默认会为开机键防抖, 导致部分用户刷机很麻烦
 if rtos.bsp() == "EC618" and pm and pm.PWK_MODE then
     pm.power(pm.PWK_MODE, false)

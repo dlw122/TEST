@@ -37,7 +37,7 @@ uart.on(uartid, "receive", function(id, len)
                         log.warn("uart", "写设备号", "国内",data:sub(4,#data - 1))
                         if data:byte(2) == 1 then --国内
                             fskv.set("APN", "sxzcat1") --设置国内APN
-                            fskv.set("MQTT_HOST", "accesstest.360xlink.com")
+                            fskv.set("MQTT_HOST", "access.360xlink.com")
                             if data:byte(3) == 1 then     --XLK8023
                                 log.warn("uart", "写设备号", "XLK8023")
                                 fskv.set("Module", "XLK8023")
