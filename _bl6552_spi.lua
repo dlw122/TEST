@@ -195,8 +195,8 @@ local function BL6552_Elect_Proc(cs)
     -- local _V_RMS_Correct    = 522
     local _I_RMS_Correct    = 63836*2
     local _V_RMS_Correct    = 10044
-    local _VI_RMS_Correct   = 40
-    local _POWER_RMS_Correct   = 4000
+    local _VI_RMS_Correct   = 47
+    local _POWER_RMS_Correct   = 2565
     -- 电流有效值转换
     local _IA_RMS = bl6552_read(cs,0x0F)
     local _IB_RMS = bl6552_read(cs,0x0E)
@@ -234,6 +234,12 @@ local function BL6552_Elect_Proc(cs)
     -- 数据校正 --
 
     return _IA_RMS,_IB_RMS,_IC_RMS,_VA_RMS,_VB_RMS,_VC_RMS,_VI_RMS,_POWER_RMS
+end
+
+local function claer_power_reg(cs)
+    BL6552_WR_Enable(cs,1) -- 打开写保护
+    bl6552_write(cs,0x32,0x00,0x00,0x00)
+    BL6552_WR_Enable(cs,0) -- 关闭写保护
 end
 
 -- 计量芯片复位引脚
@@ -288,5 +294,6 @@ log.info("shell -- file -- _bl6552_spi -- end")
 return {
     BL6552_Elect_Proc = BL6552_Elect_Proc,
     BL6552_Init = BL6552_Init,
-    test_data = test_data
+    test_data = test_data,
+    claer_power_reg = claer_power_reg,
 }

@@ -20,6 +20,12 @@ local BL6552_Elect_VI_RMS_Chx = {0,0,0,0}
 local BL6552_Elect_POWER_Chx = {0,0,0,0}
 local BL6552_Elect_POWER_Old_Chx = {0,0,0,0}
 
+local function claer_power_data_Chx(Chx)
+    BL6552_Elect_POWER_Chx[Chx] = 0
+    BL6552_Elect_POWER_Old_Chx[Chx] = 0
+end
+
+
 -- 电量时间
 
 local BL6552_Elect_POWER_TIME_Chx = {0,0,0,0}
@@ -385,6 +391,7 @@ local function BL6552_Data_Chx(Chx)
             BL6552_Elect_VB_RMS_Chx[Chx], BL6552_Elect_VC_RMS_Chx[Chx],
             BL6552_Elect_VI_RMS_Chx[Chx],BL6552_Elect_POWER_Chx[Chx]
 end
+
 -- BL6552-上报状态函数
 local function BL6552_Mqtt_Report_Chx(Event,Chx,Data,Tag)
     -- MQTT 处理事件
@@ -506,5 +513,6 @@ log.info("shell -- file -- _bl6552_data -- end")
 return {
     BL6552_Chx = BL6552_Chx,
     test_data  = test_data,
-    BL6552_Data_Chx = BL6552_Data_Chx
+    BL6552_Data_Chx = BL6552_Data_Chx,
+    claer_power_data_Chx = claer_power_data_Chx
 }

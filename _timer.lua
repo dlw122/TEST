@@ -188,6 +188,11 @@ local function Mqtt_Set_Timer_Control()
                 if Server_time["hour"] > 23 then Server_time["hour"] = 0 end
             end
         end
+
+        --清除电量
+        local test = 123456789.1234567
+        print(string.format("%.4f",test))
+
         log.warn("-----------------------------sys time :",string.format("%02d:%02d:%02d", Server_time["hour"], Server_time["min"],sec))
     end
 end
