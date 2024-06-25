@@ -197,10 +197,7 @@ local function Mqtt_Handle_Pass_Get(tjsondata)
     if tjsondata["Cmd"] == "GetChx_WVIP" and tjsondata["Data"] == "1" then
         local _IA,_IB,_IC,_VA,_VB,_VC,_W,_P = _bl6552_data.BL6552_Data_Chx(tjsondata["Chx"]) 
         sys.publish("DeviceResponse_Status","GetChx_WVIP", tjsondata["Chx"], string.format("%.4f",_P), "", "")
-        --清空寄存器
-        _bl6552_spi.claer_power_reg(tjsondata["Chx"])
-        --计数清零
-        _bl6552_data.claer_power_data_Chx(tjsondata["Chx"])
+
     end
 end
 
