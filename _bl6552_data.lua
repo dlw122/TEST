@@ -44,7 +44,25 @@ local I_SCALE_Chx = {0,0,0,0}
 -- 三相失衡比例
 local I_SCALE_Chx_Num = {0,0,0,0} 
 -- 过流过压标志
-local VI_OVER_Chx = {0,0,0,0}
+local V_OVER_Chx = {0,0,0,0}
+local I_OVER_Chx = {0,0,0,0}
+----------------------------------------
+--健康状态上报标志  0 上报告警状态 1 上报健康状态
+local H_BL6552_WR_Flag_Chx = {0,0,0,0}
+-- 输入缺相（各相电压）
+local H_ZXTO_IN_A_Chx = {0,0,0,0}
+local H_ZXTO_IN_B_Chx = {0,0,0,0}
+local H_ZXTO_IN_C_Chx = {0,0,0,0}
+-- 输出缺相（各项电流）
+local H_ZXTO_OUT_A_Chx = {0,0,0,0}
+local H_ZXTO_OUT_B_Chx = {0,0,0,0}
+local H_ZXTO_OUT_C_Chx = {0,0,0,0}
+-- 三相失衡标志
+local H_I_SCALE_Chx = {0,0,0,0}
+-- 过流过压标志
+local H_V_OVER_Chx = {0,0,0,0}
+local H_I_OVER_Chx = {0,0,0,0}
+----------------------------------------
 --------------------------------------------
 
 ----------------------------------------test获取电流电压
@@ -259,10 +277,14 @@ end
 local function _MQTT_Warn_I_SCALE_Chx(Chx)
     if fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_" .. tostring(Chx)] == "1" then  --确实报警使能
         if I_SCALE_Chx[Chx] == 1 then
-            sys.publish("DeviceWarn_Status","Alert_SCALE", Chx, string.format("%.2f_%.2f_%.2f", BL6552_Elect_IA_RMS_Chx[Chx], BL6552_Elect_IB_RMS_Chx[Chx], BL6552_Elect_IC_RMS_Chx[Chx]), "", "")
+            sys.publish("DeviceWarn_Status","Alert_SCALE", Chx, string.format("%.2f_%.2f_%.2f", BL6552_Elect_IA_RMS_Chx[Chx], BL6552_Elect_IB_RMS_Chx[Chx], BL6552_Elect_IC_RMS_Chx[Chx]), "", "0")
+            H_I_SCALE_Chx[Chx] = 0
             if fskv.get("VVVF_ENABLE_CHX_CONFIG")["_" .. tostring(Chx)] == "0" then -- 非变频
                 sys.publish("LED_Chx","AlertOP",Chx,0)
             end 
+        elseif I_SCALE_Chx[Chx] == 0 and H_I_SCALE_Chx[Chx] == 0 then --无报警 且 可以上报 健康
+            H_I_SCALE_Chx[Chx] = 1
+            sys.publish("DeviceWarn_Status","Alert_SCALE", Chx, string.format("%.2f_%.2f_%.2f", BL6552_Elect_IA_RMS_Chx[Chx], BL6552_Elect_IB_RMS_Chx[Chx], BL6552_Elect_IC_RMS_Chx[Chx]), "", "1")
         end
     end
 end
@@ -273,14 +295,29 @@ local function _MQTT_Warn_ZXTO_IN_Chx(Chx)
     if fskv.get("ZXTO_ENABLE_CHX_CONFIG")["_" .. tostring(Chx)] == "1" then -- 对应通道缺相判断使能
         --缺相使能后即可上报缺相错误
         if ZXTO_IN_A_Chx[Chx] == 1 then
-            sys.publish("DeviceWarn_Status","Alert_ZXTO", 0, "A", "", "")
-        end
+            sys.publish("DeviceWarn_Status","Alert_ZXTO", 0, "A", "", "0")
+            H_ZXTO_IN_A_Chx[Chx] = 0
+        elseif ZXTO_IN_A_Chx[Chx] == 0 and H_ZXTO_IN_A_Chx[Chx] == 0 then --无报警 且 可以上报 健康
+            H_ZXTO_IN_A_Chx[Chx] = 1
+            sys.publish("DeviceWarn_Status","Alert_ZXTO", 0, "A", "", "1")
+        end    
+
         if ZXTO_IN_B_Chx[Chx] == 1 then
-            sys.publish("DeviceWarn_Status","Alert_ZXTO", 0, "B", "", "") 
-        end
-        if ZXTO_IN_C_Chx[Chx] == 1 then
-            sys.publish("DeviceWarn_Status","Alert_ZXTO", 0, "C", "", "")
+            sys.publish("DeviceWarn_Status","Alert_ZXTO", 0, "B", "", "0") 
+            H_ZXTO_IN_B_Chx[Chx] = 0
+        elseif ZXTO_IN_B_Chx[Chx] == 0 and H_ZXTO_IN_B_Chx[Chx] == 0 then --无报警 且 可以上报 健康
+            H_ZXTO_IN_B_Chx[Chx] = 1
+            sys.publish("DeviceWarn_Status","Alert_ZXTO", 0, "B", "", "1")
         end 
+
+        if ZXTO_IN_C_Chx[Chx] == 1 then
+            sys.publish("DeviceWarn_Status","Alert_ZXTO", 0, "C", "", "0")
+            H_ZXTO_IN_C_Chx[Chx] = 0
+        elseif ZXTO_IN_C_Chx[Chx] == 0 and H_ZXTO_IN_C_Chx[Chx] == 0 then --无报警 且 可以上报 健康
+            H_ZXTO_IN_C_Chx[Chx] = 1
+            sys.publish("DeviceWarn_Status","Alert_ZXTO", 0, "C", "", "1")
+        end 
+        
         if ZXTO_IN_A_Chx[Chx] == 1 or ZXTO_IN_B_Chx[Chx] == 1 or ZXTO_IN_C_Chx[Chx] == 1 then
             -- 输出缺相（电流比例去判断）
             -- 关闭电磁阀 - 事件 同统一为 ： Event = "AlertOP"
@@ -297,14 +334,25 @@ local function _MQTT_Warn_ZXTO_OUT_Chx(Chx)
         --缺相使能后即可上报缺相错误
         --缺相使能后即可上报缺相错误
         if ZXTO_OUT_A_Chx[Chx] == 1 then
-            sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, "A", "", "")
-        end
+            sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, "A", "", "0")
+        elseif ZXTO_OUT_A_Chx[Chx] == 0 and H_ZXTO_OUT_A_Chx[Chx] == 0 then --无报警 且 可以上报 健康
+            ZXTO_OUT_A_Chx[Chx] = 1
+            sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, "A", "", "1")
+        end 
         if ZXTO_OUT_B_Chx[Chx] == 1 then
-            sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, "B", "", "") 
-        end
+            sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, "B", "", "0") 
+        elseif ZXTO_OUT_B_Chx[Chx] == 0 and H_ZXTO_OUT_B_Chx[Chx] == 0 then --无报警 且 可以上报 健康
+            ZXTO_OUT_B_Chx[Chx] = 1
+            sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, "B", "", "1")
+        end 
+
         if ZXTO_OUT_C_Chx[Chx] == 1 then
-            sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, "C", "", "")
-        end
+            sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, "C", "", "0")
+        elseif ZXTO_OUT_C_Chx[Chx] == 0 and H_ZXTO_OUT_C_Chx[Chx] == 0 then --无报警 且 可以上报 健康
+            ZXTO_OUT_C_Chx[Chx] = 1
+            sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, "C", "", "1")
+        end 
+
         if ZXTO_OUT_A_Chx[Chx] == 1 or ZXTO_OUT_B_Chx[Chx] == 1 or ZXTO_OUT_C_Chx[Chx] == 1 then
             -- 输出缺相（电流比例去判断）
             -- 关闭电磁阀 - 事件 同统一为 ： Event = "AlertOP"
@@ -322,16 +370,19 @@ local function _MQTT_Warn_VI_OVER_Chx(Chx)
         log.warn("_MQTT_Warn_V_OVER_Chx -- ",BL6552_Elect_VA_RMS_Chx[Chx],tonumber(fskv.get("V_NUM_CHX_CONFIG")["_" .. tostring(Chx)]))
         log.warn("_MQTT_Warn_I_OVER_Chx -- ",BL6552_Elect_IB_RMS_Chx[Chx],tonumber(fskv.get("I_NUM_CHX_CONFIG")["_" .. tostring(Chx)]))
         if BL6552_Elect_VA_RMS_Chx[Chx] > tonumber(fskv.get("V_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then 
-            sys.publish("DeviceWarn_Status","Alert_VF", Chx, string.format("%.2f", BL6552_Elect_VA_RMS_Chx[Chx]), "", "")
+            sys.publish("DeviceWarn_Status","Alert_VF", Chx, string.format("%.2f", BL6552_Elect_VA_RMS_Chx[Chx]), "", "0")
             sys.publish("LED_Chx","AlertOP",Chx,0)
+            V_OVER_Chx[Chx] = 0
         elseif BL6552_Elect_VC_RMS_Chx[Chx] > tonumber(fskv.get("V_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
-            sys.publish("DeviceWarn_Status","Alert_VF", Chx, string.format("%.2f", BL6552_Elect_VC_RMS_Chx[Chx]), "", "")
+            sys.publish("DeviceWarn_Status","Alert_VF", Chx, string.format("%.2f", BL6552_Elect_VC_RMS_Chx[Chx]), "", "0")
             sys.publish("LED_Chx","AlertOP",Chx,0)
+            V_OVER_Chx[Chx] = 0
         end
         
         if BL6552_Elect_IB_RMS_Chx[Chx] > tonumber(fskv.get("I_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
-            sys.publish("DeviceWarn_Status","Alert_IF", Chx, string.format("%.2f", BL6552_Elect_IB_RMS_Chx[Chx]), "", "")
+            sys.publish("DeviceWarn_Status","Alert_IF", Chx, string.format("%.2f", BL6552_Elect_IB_RMS_Chx[Chx]), "", "0")
             sys.publish("LED_Chx","AlertOP",Chx,0)
+            I_OVER_Chx[Chx] = 0
         end
     end
 end
@@ -403,6 +454,22 @@ local function BL6552_Mqtt_Report_Chx(Event,Chx,Data,Tag)
     Event = "GetChx"  --数据上报，统一为GetChx
     
     if Data == 1 and _led.Get_Electromagnetic_ChX(Chx) == 1 then
+
+        if V_OVER_Chx[Chx] == 1 and  H_V_OVER_Chx[Chx] == 0 then  --如果上报 过 过压告警
+            -- 业务逻辑 (上报过压告警 恢复)
+            if BL6552_Elect_VA_RMS_Chx[Chx] < tonumber(fskv.get("V_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) and BL6552_Elect_VC_RMS_Chx[Chx] < tonumber(fskv.get("V_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then 
+                sys.publish("DeviceWarn_Status","Alert_VF", Chx, string.format("%.2f", BL6552_Elect_VA_RMS_Chx[Chx]), "", "1")
+                H_V_OVER_Chx[Chx] = 1
+            end
+        end
+
+        if I_OVER_Chx[Chx] == 1 and  H_I_OVER_Chx[Chx] == 0 then  --如果上报 过 过流告警
+            -- 业务逻辑 (上报过流告警 恢复)
+            if BL6552_Elect_IB_RMS_Chx[Chx] < tonumber(fskv.get("I_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
+                sys.publish("DeviceWarn_Status","Alert_IF", Chx, string.format("%.2f", BL6552_Elect_IB_RMS_Chx[Chx]), "", "1")
+                H_I_OVER_Chx[Chx] = 1
+            end
+        end
 
         --业务逻辑
         if Tag == "0" then --

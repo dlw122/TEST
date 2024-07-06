@@ -37,6 +37,11 @@ local function get_mqttc()
     return mqttc
 end
 
+----------------------------------------
+--健康状态上报标志  0 上报告警状态 1 上报健康状态
+local H_BL6552_WR_Flag_Chx = {0,0,0,0}
+
+----------------------------------------
 
 local function Device_Get_Info()
     
@@ -108,16 +113,24 @@ local function Loop_Update_Elec_Status()
 end
 
 ----------温度状态，有报警则发送信息给服务器-5分钟扫描一次
+----------------------------------------
+--健康状态上报标志  0 上报告警状态 1 上报健康状态
+local H_Temp = 0
+----------------------------------------
 local function Loop_Update_Temperature_Status()
         DeviceResponse_Status("Temp", 0,_adc.Get_Temperature(), "", "")  
         -- 检测板子温度是否报警
         if tonumber(fskv.get("TEMPERATURE_NUM_CONFIG")) <= (math.floor(100 * tonumber(_adc.Get_Temperature())) / 100) then
-            sys.publish("DeviceWarn_Status","Alert_Hot", 0, string.format("%.2f",(math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
+            sys.publish("DeviceWarn_Status","Alert_Hot", 0, string.format("%.2f",(math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "0")
+            H_Temp = 0
             for i = 1,4,1 do
                 if _led.Get_Electromagnetic_ChX(i) == 1 then --电磁阀开启菜上报数据
                     sys.publish("LED_Chx","AlertOP",i,0)
                 end
-            end 
+            end
+        elseif H_Temp == 0 then
+            H_Temp = 1
+            sys.publish("DeviceWarn_Status","Alert_Hot", 0, string.format("%.2f",(math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "1")
         end
 end
 
@@ -167,7 +180,7 @@ sys.taskInit( function() --设备连接mqtt后，进行握手
             -- 心跳消息
             DeviceResponse_Status("Hb", 0, "", "1", "")
             sys.wait(5000)
-
+            sys.publish("DeviceWarn_Status","Alert_PowerLost", 0, "", "", "1")
             --SET_Self_Check
             if (fskv.get("LOCK_FLAG") == "1") then 
                 sys.publish("DeviceWarn_Status","Lock", 0, "1", "", "")

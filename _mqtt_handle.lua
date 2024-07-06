@@ -56,15 +56,17 @@ local function Mqtt_Handle_Whole(tjsondata)
     elseif tjsondata["Cmd"] == "Prof_MaxTemp" then
         if tonumber(tjsondata["Data"]) > 0 and tonumber(tjsondata["Data"]) < 200 then
             fskv.set("TEMPERATURE_NUM_CONFIG", tjsondata["Data"])
-            -- 检测板子温度是否报警
+            -- 检测板子温度是否报警  
+            --[[
             if tonumber(fskv.get("TEMPERATURE_NUM_CONFIG")) <= (math.floor(100 * tonumber(_adc.Get_Temperature())) / 100) then
-                sys.publish("DeviceWarn_Status","Alert_Hot", 0, string.format("%.2f",(math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "")
+                sys.publish("DeviceWarn_Status","Alert_Hot", 0, string.format("%.2f",(math.floor(100 * tonumber(_adc.Get_Temperature())) / 100)), "", "0")
                 for i = 1,4,1 do
                     if _led.Get_Electromagnetic_ChX(i) == 1 then --电磁阀开启菜上报数据
                         sys.publish("LED_Chx","AlertOP",i,0)
                     end
                 end 
             end
+            ]]
             sys.publish("DeviceResponse_Status",tjsondata["Cmd"], tjsondata["Chx"], tjsondata["Data"], "", "")
         end
         -------------------------------------------掉电告警是否开启

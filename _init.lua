@@ -51,7 +51,7 @@ sys.taskInit(function()
         log.info("fskv------------init!")
     end
     fskv.set("HW", "V01.1 ")
-    fskv.set("FW", "V06.24")
+    fskv.set("FW", "V07.06")
 
     
     log.info("Device_SN                 ------------",fskv.get("Device_SN"))
