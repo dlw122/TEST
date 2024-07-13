@@ -20,7 +20,7 @@ local BL6552_Elect_VI_RMS_Chx = {0,0,0,0}
 local BL6552_Elect_POWER_Chx = {0,0,0,0}
 local BL6552_Elect_POWER_Old_Chx = {0,0,0,0}
 
-local function claer_power_data_Chx(Chx)
+local function clear_power_data_Chx(Chx)
     BL6552_Elect_POWER_Chx[Chx] = 0
     BL6552_Elect_POWER_Old_Chx[Chx] = 0
 end
@@ -152,9 +152,10 @@ local function BL6552_Update_Data_Chx(Event,Chx,Data,Tag)
         BL6552_Elect_VI_RMS_Chx[Chx],BL6552_Elect_POWER_Old_Chx[Chx] = _bl6552_spi.BL6552_Elect_Proc(Chx)
 
         if Tag == "1" then --只对电磁阀进行操作的测量采取处理电量
-            --清除计数值
-            BL6552_Elect_POWER_Old_Chx[Chx] = 0
-            BL6552_Elect_POWER_Chx[Chx] = 0
+                --清空寄存器
+                _bl6552_spi.clear_power_reg(Chx)
+                --计数清零
+                clear_power_data_Chx(Chx)
         end
         
         log.warn("bl6552 Chx:", Chx, "data")
@@ -581,5 +582,5 @@ return {
     BL6552_Chx = BL6552_Chx,
     test_data  = test_data,
     BL6552_Data_Chx = BL6552_Data_Chx,
-    claer_power_data_Chx = claer_power_data_Chx
+    clear_power_data_Chx = clear_power_data_Chx
 }

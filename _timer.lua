@@ -24,7 +24,7 @@ end
 ---------------------------------------------------
 -- 设备时间
 ---------------------------------------------------
-local Server_time = {hour = 08, min = 08}
+local Server_time = {hour = 23, min = 58}
 
 --输入时间字符串 "2023/08/15,10:07:00"
 local function Set_Time(time_sync)
@@ -195,9 +195,9 @@ local function Mqtt_Set_Timer_Control()
                 local _IA,_IB,_IC,_VA,_VB,_VC,_W,_P = _bl6552_data.BL6552_Data_Chx(i) 
                 sys.publish("DeviceResponse_Status","GetChx_WVIP", i, string.format("%.4f",_P), "", "")
                 --清空寄存器
-                _bl6552_spi.claer_power_reg(i)
+                _bl6552_spi.clear_power_reg(i)
                 --计数清零
-                _bl6552_data.claer_power_data_Chx(i)
+                _bl6552_data.clear_power_data_Chx(i)
             end
         end
         log.warn("-----------------------------sys time :",string.format("%02d:%02d:%02d", Server_time["hour"], Server_time["min"],sec))

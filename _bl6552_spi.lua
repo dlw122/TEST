@@ -236,7 +236,7 @@ local function BL6552_Elect_Proc(cs)
     return _IA_RMS,_IB_RMS,_IC_RMS,_VA_RMS,_VB_RMS,_VC_RMS,_VI_RMS,_POWER_RMS
 end
 
-local function claer_power_reg(cs)
+local function clear_power_reg(cs)
     BL6552_WR_Enable(cs,1) -- 打开写保护
     bl6552_write(cs,0x32,0x00,0x00,0x00)
     BL6552_WR_Enable(cs,0) -- 关闭写保护
@@ -295,5 +295,5 @@ return {
     BL6552_Elect_Proc = BL6552_Elect_Proc,
     BL6552_Init = BL6552_Init,
     test_data = test_data,
-    claer_power_reg = claer_power_reg,
+    clear_power_reg = clear_power_reg,
 }
