@@ -32,7 +32,7 @@ sys.taskInit(function()
         log.info("fskv------------",fskv.get("check"))
     else
         fskv.set("check", "check_OK")
-        fskv.set("Device_SN", "60975340")
+        fskv.set("Device_SN", "77777777")
         fskv.set("I_SCALE_ENABLE_CHX_CONFIG", {_1 = "1",_2 = "1",_3 = "1",_4 = "1"})
         fskv.set("I_SCALE_NUM_CHX_CONFIG",{_1 = "40",_2 = "40",_3 = "40",_4 = "40"})
         fskv.set("I_NUM_CHX_CONFIG", {_1 = "6",_2 = "6",_3 = "6",_4 = "6"})

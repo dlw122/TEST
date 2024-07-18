@@ -3,7 +3,7 @@ PROJECT = "mqttdemo"
 VERSION = "1.0.0"
 log.info("shell -- file -- main -- start")
 
-log.setLevel("INFO")
+log.setLevel("DEBUG")
 print("log level: ",log.getLevel())
 
 -- sys库是标配

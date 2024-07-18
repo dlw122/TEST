@@ -80,6 +80,7 @@ end
 ---------------发送报警信息给服务器
 local function DeviceWarn_Status(Mycmd, Mychx, Mydata, Mystatus, Mytag) -- 供别处调用
     if mqtt_connect_flag ~= 2 then return end
+    print(" ---------- mqtt --------- lock ",fskv.get("LOCK_FLAG"))
     if (fskv.get("LOCK_FLAG") == "1") then
         sys.publish("mqtt_send",Device_Get_UserData("DeviceWarn", Device_SN,"Lock", 0, "1", "", ""))
     elseif (fskv.get("LOCK_FLAG") == "0") then
@@ -112,7 +113,7 @@ local function Loop_Update_Elec_Status()
     end    
 end
 
-----------温度状态，有报警则发送信息给服务器-5分钟扫描一次
+----------温度状态，有报警则发送信息给服务器-5分钟扫描一次]
 ----------------------------------------
 --健康状态上报标志  0 上报告警状态 1 上报健康状态
 local H_Temp = 0
@@ -181,17 +182,11 @@ sys.taskInit( function() --设备连接mqtt后，进行握手
             DeviceResponse_Status("Hb", 0, "", "1", "")
             sys.wait(5000)
             sys.publish("DeviceWarn_Status","Alert_PowerLost", 0, "", "", "1")
-            --SET_Self_Check
-            if (fskv.get("LOCK_FLAG") == "1") then 
+            -- 判断是否锁
+            if (fskv.get("LOCK_FLAG") == "1") then
+                print("----------Lock----------",fskv.get("LOCK_FLAG"))
                 sys.publish("DeviceWarn_Status","Lock", 0, "1", "", "")
             end
-            --------------------
-            -- 格式化本地时间字符串
-            local time_str = os.date("%Y-%m-%d %H:%M:%S")
-            log.warn("本地时间字符串", time_str)
-            log.warn("本地时间字符串长度", #time_str)
-            log.warn("本地时间字符串小时", string.sub(time_str, 12, 16))
-            sys.publish("TimeSync",string.sub(time_str, 12, 16)) -- 系统时间已经同步
 
             mqtt_connect_flag = 2 -- 连接 - 握手成功
             sys.publish("mqtt_connect_flag",mqtt_connect_flag)
@@ -238,7 +233,6 @@ sys.taskInit(function ()
         if res then
             if Mycmd == "Alert_PowerLost" then --设备掉电告警特殊处理
                 sys.publish("mqtt_send",Device_Get_UserData("DeviceWarn", Device_SN,Mycmd, Mychx, Mydata, Mystatus, Mytag))
-                return true
             end
             DeviceWarn_Status(Mycmd, Mychx, Mydata, Mystatus, Mytag)
         end
