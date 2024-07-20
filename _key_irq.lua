@@ -13,12 +13,6 @@ local lock_start_time = 0
 
 local Self_Check = 0
 
-----------------------------------------
---健康状态上报标志  0 上报告警状态 1 上报健康状态
-local H_LOCK_FLAG = 0
-----------------------------------------
-
-
 -- 联网状态标识
 local function Set_Self_Check(DATA) 
     Self_Check = DATA
