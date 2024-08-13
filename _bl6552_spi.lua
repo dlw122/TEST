@@ -191,12 +191,17 @@ end
 
 local function BL6552_Elect_Proc(cs)
     --校验系数 电流 电压 有效功率
-    -- local _I_RMS_Correct    = 122
-    -- local _V_RMS_Correct    = 522
-    local _I_RMS_Correct    = 63836*2
-    local _V_RMS_Correct    = 10044
-    local _VI_RMS_Correct   = 47
-    local _POWER_RMS_Correct   = 2565
+
+    local _IA_RMS_Correct    = 132779
+    local _IB_RMS_Correct    = 126792
+    local _IC_RMS_Correct    = 122318
+
+    local _VA_RMS_Correct    = 10044
+    local _VB_RMS_Correct    = 10000  -- B相为 基电压 不测量
+    local _VC_RMS_Correct    = 9998
+
+    local _VI_RMS_Correct   = 65
+    local _POWER_RMS_Correct   = 3200
     -- 电流有效值转换
     local _IA_RMS = bl6552_read(cs,0x0F)
     local _IB_RMS = bl6552_read(cs,0x0E)
@@ -214,12 +219,12 @@ local function BL6552_Elect_Proc(cs)
     local _POWER_RMS = bl6552_read(cs,0x32)
     -- 数据校正 --
     -- 校准后的功率、电压、电流计算
-    _VA_RMS = math.floor(_VA_RMS) / _V_RMS_Correct
-    _VB_RMS = math.floor(_VB_RMS) / _V_RMS_Correct
-    _VC_RMS = math.floor(_VC_RMS) / _V_RMS_Correct
-    _IA_RMS = math.floor(_IA_RMS) / _I_RMS_Correct
-    _IB_RMS = math.floor(_IB_RMS) / _I_RMS_Correct
-    _IC_RMS = math.floor(_IC_RMS) / _I_RMS_Correct
+    _VA_RMS = math.floor(_VA_RMS) / _VA_RMS_Correct
+    _VB_RMS = math.floor(_VB_RMS) / _VB_RMS_Correct
+    _VC_RMS = math.floor(_VC_RMS) / _VC_RMS_Correct
+    _IA_RMS = math.floor(_IA_RMS) / _IA_RMS_Correct
+    _IB_RMS = math.floor(_IB_RMS) / _IB_RMS_Correct
+    _IC_RMS = math.floor(_IC_RMS) / _IC_RMS_Correct
 
     if _IA_RMS < 0.03 then _IA_RMS = 0 end
     if _IB_RMS < 0.03 then _IB_RMS = 0 end
@@ -227,10 +232,10 @@ local function BL6552_Elect_Proc(cs)
 
     -- 校准后计算功率
     _VI_RMS = math.floor(_VI_RMS) / _VI_RMS_Correct
+    --_VI_RMS = 1.73205*((_VA_RMS + _VC_RMS)/2)*((_IA_RMS + _IB_RMS + _IC_RMS)/3)*0.8    -- 有功功率
 
-    -- 校验后的电量
-    -- _POWER_RMS = _POWER_RMS/100
-    _POWER_RMS = _POWER_RMS/_POWER_RMS_Correct
+    _POWER_RMS = math.floor(_POWER_RMS)/_POWER_RMS_Correct
+
     -- 数据校正 --
 
     return _IA_RMS,_IB_RMS,_IC_RMS,_VA_RMS,_VB_RMS,_VC_RMS,_VI_RMS,_POWER_RMS

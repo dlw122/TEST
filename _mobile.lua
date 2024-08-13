@@ -36,14 +36,9 @@ sys.taskInit(function()
         log.info("band", band1[i])
     end
 
-    -- mobile.apn(0,1,"sxzcat1","","",1,3) -- 使用默认APN激活CID2
+    --设置国内外统一用此APN
+    mobile.apn(0,1,"sxzcat1","","",1,3) -- 使用默认APN激活CID2
 
-    local apn = fskv.get("APN")
-    if apn == nil then
-        fskv.set("APN", "sxzcat1")
-        apn = fskv.get("APN")
-    end
-    mobile.apn(0,1,apn,"","",1,3) -- 使用默认APN激活CID2
     -- mobile.rtime(3) -- 在无数据交互时，RRC 3秒后自动释放
     -- 下面是配置自动搜索小区间隔，和轮询搜索冲突，开启1个就可以了
     -- mobile.setAuto(10000,30000, 5) -- SIM暂时脱离后自动恢复，30秒搜索一次周围小区信息

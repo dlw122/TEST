@@ -498,7 +498,7 @@ local function BL6552_Mqtt_Report_Chx(Event,Chx,Data,Tag)
         elseif Tag == "1" then
             --不上报
         elseif Tag == "2" then
-            _data = string.format("%.2f",_P) -- 保存数据
+            _data = string.format("%.4f",_P) -- 保存数据
             local _f = math.floor((BL6552_Elect_POWER_TIME_Chx[Chx] + 30)/60) -- 计算电量分钟数
             _data = _data .. "_" .. tostring(_f)
             sys.publish("DeviceResponse_Status","GetEnergy", Chx, _data, "0", Tag) -----------

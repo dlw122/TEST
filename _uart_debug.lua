@@ -36,7 +36,7 @@ uart.on(uartid, "receive", function(id, len)
                         fskv.set("Module_TYPE", data:byte(3))
                         log.warn("uart", "写设备号", "国内",data:sub(4,#data - 1))
                         if data:byte(2) == 1 then --国内
-                            fskv.set("APN", "sxzcat1") --设置国内APN
+                            fskv.set("APN", "SXZ01.GZM2MAPN") --设置国外APN
                             fskv.set("MQTT_HOST", "access.360xlink.com")
                             if data:byte(3) == 1 then     --XLK8023
                                 log.warn("uart", "写设备号", "XLK8023")
@@ -65,7 +65,7 @@ uart.on(uartid, "receive", function(id, len)
                                 fskv.set("V_NUM_CHX_CONFIG",{_1 = "400",_2 = "400",_3 = "400",_4 = "400"})
                             end
                         elseif data:byte(2) == 2 then --国外
-                            fskv.set("APN", "scuiot.njm2mapn") --设置国外APN
+                            fskv.set("APN", "sxzcat1") --设置国外APN
                             fskv.set("MQTT_HOST", "m2m.iyhl.com.my")
                             log.warn("uart", "写设备号", "国外",data:sub(4,#data - 1))
                             if data:byte(3) == 1 then     --XLK8023

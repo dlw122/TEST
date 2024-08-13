@@ -51,9 +51,8 @@ sys.taskInit(function()
         log.info("fskv------------init!")
     end
     fskv.set("HW", "V01.1 ")
-    fskv.set("FW", "V07.20")
+    fskv.set("FW", "V08.13")
 
-    
     log.info("Device_SN                 ------------",fskv.get("Device_SN"))
     log.warn("I_SCALE_ENABLE_CHX_CONFIG ------------",fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_1"],fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_2"],fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_3"],fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_4"])
     log.warn("I_SCALE_NUM_CHX_CONFIG    ------------",fskv.get("I_SCALE_NUM_CHX_CONFIG")["_1"],fskv.get("I_SCALE_NUM_CHX_CONFIG")["_2"],fskv.get("I_SCALE_NUM_CHX_CONFIG")["_3"],fskv.get("I_SCALE_NUM_CHX_CONFIG")["_4"])
