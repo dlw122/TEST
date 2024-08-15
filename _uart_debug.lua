@@ -42,27 +42,27 @@ uart.on(uartid, "receive", function(id, len)
                                 log.warn("uart", "写设备号", "XLK8023")
                                 fskv.set("Module", "XLK8023")
                                 fskv.set("I_NUM_CHX_CONFIG", {_1 = "6",_2 = "6",_3 = "6",_4 = "6"})
-                                fskv.set("V_NUM_CHX_CONFIG",{_1 = "400",_2 = "400",_3 = "400",_4 = "400"})
+                                fskv.set("V_NUM_CHX_CONFIG",{_1 = "420",_2 = "420",_3 = "420",_4 = "420"})
                             elseif data:byte(3) == 2 then --XLK8025
                                 log.warn("uart", "写设备号", "XLK8025")
                                 fskv.set("Module", "XLK8025")
                                 fskv.set("I_NUM_CHX_CONFIG", {_1 = "10",_2 = "10",_3 = "10",_4 = "10"})
-                                fskv.set("V_NUM_CHX_CONFIG",{_1 = "400",_2 = "400",_3 = "400",_4 = "400"})
+                                fskv.set("V_NUM_CHX_CONFIG",{_1 = "420",_2 = "420",_3 = "420",_4 = "420"})
                             elseif data:byte(3) == 3 then --XLK8026
                                 log.warn("uart", "写设备号", "XLK8026")
                                 fskv.set("Module", "XLK8026")
                                 fskv.set("I_NUM_CHX_CONFIG", {_1 = "12",_2 = "12",_3 = "12",_4 = "12"})
-                                fskv.set("V_NUM_CHX_CONFIG",{_1 = "400",_2 = "400",_3 = "400",_4 = "400"})
+                                fskv.set("V_NUM_CHX_CONFIG",{_1 = "420",_2 = "420",_3 = "420",_4 = "420"})
                             elseif data:byte(3) == 4 then --XLK8028
                                 log.warn("uart", "写设备号", "XLK8028")
                                 fskv.set("Module", "XLK8028")
                                 fskv.set("I_NUM_CHX_CONFIG", {_1 = "16",_2 = "16",_3 = "16",_4 = "16"})
-                                fskv.set("V_NUM_CHX_CONFIG",{_1 = "400",_2 = "400",_3 = "400",_4 = "400"})
+                                fskv.set("V_NUM_CHX_CONFIG",{_1 = "420",_2 = "420",_3 = "420",_4 = "420"})
                             elseif data:byte(3) == 5 then --XLK8023E
                                 log.warn("uart", "写设备号", "XLK8023E")
                                 fskv.set("Module", "XLK8023E")
                                 fskv.set("I_NUM_CHX_CONFIG", {_1 = "6",_2 = "6",_3 = "6",_4 = "6"})
-                                fskv.set("V_NUM_CHX_CONFIG",{_1 = "400",_2 = "400",_3 = "400",_4 = "400"})
+                                fskv.set("V_NUM_CHX_CONFIG",{_1 = "420",_2 = "420",_3 = "420",_4 = "420"})
                             end
                         elseif data:byte(2) == 2 then --国外
                             fskv.set("APN", "sxzcat1") --设置国外APN
@@ -72,27 +72,27 @@ uart.on(uartid, "receive", function(id, len)
                                 log.warn("uart", "写设备号", "XLK8023")
                                 fskv.set("Module", "XLK8023")
                                 fskv.set("I_NUM_CHX_CONFIG", {_1 = "6",_2 = "6",_3 = "6",_4 = "6"})
-                                fskv.set("V_NUM_CHX_CONFIG",{_1 = "430",_2 = "430",_3 = "430",_4 = "430"})
+                                fskv.set("V_NUM_CHX_CONFIG",{_1 = "460",_2 = "460",_3 = "460",_4 = "460"})
                             elseif data:byte(3) == 4 then --XLK8028
                                 log.warn("uart", "写设备号", "XLK8028")
                                 fskv.set("Module", "XLK8028")
                                 fskv.set("I_NUM_CHX_CONFIG", {_1 = "16",_2 = "16",_3 = "16",_4 = "16"})
-                                fskv.set("V_NUM_CHX_CONFIG",{_1 = "430",_2 = "430",_3 = "430",_4 = "430"})
+                                fskv.set("V_NUM_CHX_CONFIG",{_1 = "460",_2 = "460",_3 = "460",_4 = "460"})
                             elseif data:byte(3) == 6 then --iYHL3000
                                 log.warn("uart", "写设备号", "iYHL3000")
                                 fskv.set("Module", "iYHL3000")
                                 fskv.set("I_NUM_CHX_CONFIG", {_1 = "6",_2 = "6",_3 = "6",_4 = "6"})
-                                fskv.set("V_NUM_CHX_CONFIG",{_1 = "430",_2 = "430",_3 = "430",_4 = "430"})
+                                fskv.set("V_NUM_CHX_CONFIG",{_1 = "460",_2 = "460",_3 = "460",_4 = "460"})
                             elseif data:byte(3) == 7 then --iYHL5000
                                 log.warn("uart", "写设备号", "iYHL5000")
                                 fskv.set("Module", "iYHL5000")
                                 fskv.set("I_NUM_CHX_CONFIG", {_1 = "10",_2 = "10",_3 = "10",_4 = "10"})
-                                fskv.set("V_NUM_CHX_CONFIG",{_1 = "430",_2 = "430",_3 = "430",_4 = "430"})
+                                fskv.set("V_NUM_CHX_CONFIG",{_1 = "460",_2 = "460",_3 = "460",_4 = "460"})
                             elseif data:byte(3) == 8 then --iYHL8000
                                 log.warn("uart", "写设备号", "iYHL8000")
                                 fskv.set("Module", "iYHL8000")
                                 fskv.set("I_NUM_CHX_CONFIG", {_1 = "16",_2 = "16",_3 = "16",_4 = "16"})
-                                fskv.set("V_NUM_CHX_CONFIG",{_1 = "430",_2 = "430",_3 = "430",_4 = "430"})
+                                fskv.set("V_NUM_CHX_CONFIG",{_1 = "460",_2 = "460",_3 = "460",_4 = "460"})
                             end    
                         end
                         

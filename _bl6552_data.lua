@@ -502,7 +502,12 @@ local function BL6552_Mqtt_Report_Chx(Event,Chx,Data,Tag)
             local _f = math.floor((BL6552_Elect_POWER_TIME_Chx[Chx] + 30)/60) -- 计算电量分钟数
             _data = _data .. "_" .. tostring(_f)
             sys.publish("DeviceResponse_Status","GetEnergy", Chx, _data, "0", Tag) -----------
-            BL6552_Elect_POWER_TIME_Chx[Chx] =  0 -- 电量计时清零
+            --计数清零
+            BL6552_Elect_POWER_Chx[Chx] = 0
+            BL6552_Elect_POWER_Old_Chx[Chx] = 0
+            --清空寄存器
+            _bl6552_spi.clear_power_reg(Chx)
+
         end
         
     end

@@ -197,9 +197,8 @@ local function Mqtt_Handle_Pass_Get(tjsondata)
     end
     ------------------------------------------- 获取功率电压电流
     if tjsondata["Cmd"] == "GetChx_WVIP" and tjsondata["Data"] == "1" then
-        local _IA,_IB,_IC,_VA,_VB,_VC,_W,_P = _bl6552_data.BL6552_Data_Chx(tjsondata["Chx"]) 
+        local _IA,_IB,_IC,_VA,_VB,_VC,_W,_P = _bl6552_spi.BL6552_Elect_Proc(tjsondata["Chx"])
         sys.publish("DeviceResponse_Status","GetChx_WVIP", tjsondata["Chx"], string.format("%.4f",_P), "", "")
-
     end
 end
 

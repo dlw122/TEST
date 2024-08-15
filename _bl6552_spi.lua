@@ -192,16 +192,16 @@ end
 local function BL6552_Elect_Proc(cs)
     --校验系数 电流 电压 有效功率
 
-    local _IA_RMS_Correct    = 132779
-    local _IB_RMS_Correct    = 126792
-    local _IC_RMS_Correct    = 122318
+    local _IA_RMS_Correct    = 119343
+    local _IB_RMS_Correct    = 118102
+    local _IC_RMS_Correct    = 120017
 
-    local _VA_RMS_Correct    = 10044
+    local _VA_RMS_Correct    = 10054
     local _VB_RMS_Correct    = 10000  -- B相为 基电压 不测量
-    local _VC_RMS_Correct    = 9998
+    local _VC_RMS_Correct    = 9949
 
-    local _VI_RMS_Correct   = 65
-    local _POWER_RMS_Correct   = 3200
+    local _VI_RMS_Correct   = 63
+    local _POWER_RMS_Correct   = 2387
     -- 电流有效值转换
     local _IA_RMS = bl6552_read(cs,0x0F)
     local _IB_RMS = bl6552_read(cs,0x0E)
