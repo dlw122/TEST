@@ -18,13 +18,6 @@ local BL6552_Elect_VC_RMS_Chx = {0,0,0,0}
 local BL6552_Elect_VI_RMS_Chx = {0,0,0,0}
 -- 电量
 local BL6552_Elect_POWER_Chx = {0,0,0,0}
-local BL6552_Elect_POWER_Old_Chx = {0,0,0,0}
-
-local function clear_power_data_Chx(Chx)
-    BL6552_Elect_POWER_Chx[Chx] = 0
-    BL6552_Elect_POWER_Old_Chx[Chx] = 0
-end
-
 
 -- 电量时间
 
@@ -127,17 +120,9 @@ local function BL6552_Update_Data_Chx(Event,Chx,Data,Tag)
         BL6552_Elect_IA_RMS_Chx[Chx], BL6552_Elect_IB_RMS_Chx[Chx],
         BL6552_Elect_IC_RMS_Chx[Chx], BL6552_Elect_VA_RMS_Chx[Chx],
         BL6552_Elect_VB_RMS_Chx[Chx], BL6552_Elect_VC_RMS_Chx[Chx],
-        BL6552_Elect_VI_RMS_Chx[Chx], BL6552_Elect_POWER_Chx[Chx] = _bl6552_spi.BL6552_Elect_Proc(Chx)
-        if Tag == "1" then --只对电磁阀进行操作的测量采取处理电量
-            --继电器关闭的时候 计算电量 
-            --计算方式 现在的计数值减去刚开机的计数值(业务要求)
-            BL6552_Elect_POWER_Chx[Chx] = BL6552_Elect_POWER_Chx[Chx] - BL6552_Elect_POWER_Old_Chx[Chx]
-            --清除旧的计数值
-            BL6552_Elect_POWER_Old_Chx[Chx] = 0
-            --计算得到的最终值小于 0 ，则为 0
-            if BL6552_Elect_POWER_Chx[Chx] < 0 then
-                BL6552_Elect_POWER_Chx[Chx] = 0
-            end
+        BL6552_Elect_VI_RMS_Chx[Chx] = _bl6552_spi.BL6552_Elect_Proc(Chx)
+        if Tag == "2" then --只对电磁阀进行操作的测量采取处理电量
+            BL6552_Elect_POWER_Chx[Chx] = _bl6552_spi.get_power(Chx)
         end
 
         log.warn("bl6552 Chx:", Chx, "data")
@@ -149,13 +134,11 @@ local function BL6552_Update_Data_Chx(Event,Chx,Data,Tag)
         BL6552_Elect_IA_RMS_Chx[Chx], BL6552_Elect_IB_RMS_Chx[Chx],
         BL6552_Elect_IC_RMS_Chx[Chx], BL6552_Elect_VA_RMS_Chx[Chx],
         BL6552_Elect_VB_RMS_Chx[Chx], BL6552_Elect_VC_RMS_Chx[Chx],
-        BL6552_Elect_VI_RMS_Chx[Chx],BL6552_Elect_POWER_Old_Chx[Chx] = _bl6552_spi.BL6552_Elect_Proc(Chx)
+        BL6552_Elect_VI_RMS_Chx[Chx] = _bl6552_spi.BL6552_Elect_Proc(Chx)
 
-        if Tag == "1" then --只对电磁阀进行操作的测量采取处理电量
-                --清空寄存器
-                _bl6552_spi.clear_power_reg(Chx)
-                --计数清零
-                clear_power_data_Chx(Chx)
+        if Tag == "2" then --只对电磁阀进行操作的测量采取处理电量
+            --读取电量  （为了清零）
+            BL6552_Elect_POWER_Chx[Chx] = _bl6552_spi.get_power(Chx)
         end
         
         log.warn("bl6552 Chx:", Chx, "data")
@@ -371,8 +354,8 @@ end
 local function _MQTT_Warn_VI_OVER_Chx(Chx)
     -- 过压 过流报警
     if fskv.get("IV_NUM_ENABLE_CHX_CONFIG")["_" .. tostring(Chx)] == "1" then -- 对应通道缺相判断使能
-        log.warn("_MQTT_Warn_V_OVER_Chx -- ",BL6552_Elect_VA_RMS_Chx[Chx],tonumber(fskv.get("V_NUM_CHX_CONFIG")["_" .. tostring(Chx)]))
-        log.warn("_MQTT_Warn_I_OVER_Chx -- ",BL6552_Elect_IB_RMS_Chx[Chx],tonumber(fskv.get("I_NUM_CHX_CONFIG")["_" .. tostring(Chx)]))
+        log.warn("_MQTT_Warn_V_OVER_Chx -ABC- ",BL6552_Elect_VA_RMS_Chx[Chx],BL6552_Elect_VC_RMS_Chx[Chx],tonumber(fskv.get("V_NUM_CHX_CONFIG")["_" .. tostring(Chx)]))
+        log.warn("_MQTT_Warn_I_OVER_Chx -- ",BL6552_Elect_IA_RMS_Chx[Chx],BL6552_Elect_IB_RMS_Chx[Chx],BL6552_Elect_IC_RMS_Chx[Chx],tonumber(fskv.get("I_NUM_CHX_CONFIG")["_" .. tostring(Chx)]))
         if BL6552_Elect_VA_RMS_Chx[Chx] > tonumber(fskv.get("V_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then 
             sys.publish("DeviceWarn_Status","Alert_VF", Chx, string.format("%.2f", BL6552_Elect_VA_RMS_Chx[Chx]), "", "0")
             sys.publish("LED_Chx","AlertOP",Chx,0)
@@ -502,14 +485,7 @@ local function BL6552_Mqtt_Report_Chx(Event,Chx,Data,Tag)
             local _f = math.floor((BL6552_Elect_POWER_TIME_Chx[Chx] + 30)/60) -- 计算电量分钟数
             _data = _data .. "_" .. tostring(_f)
             sys.publish("DeviceResponse_Status","GetEnergy", Chx, _data, "0", Tag) -----------
-            --计数清零
-            BL6552_Elect_POWER_Chx[Chx] = 0
-            BL6552_Elect_POWER_Old_Chx[Chx] = 0
-            --清空寄存器
-            _bl6552_spi.clear_power_reg(Chx)
-
         end
-        
     end
 end
 
@@ -592,6 +568,5 @@ log.info("shell -- file -- _bl6552_data -- end")
 return {
     BL6552_Chx = BL6552_Chx,
     test_data  = test_data,
-    BL6552_Data_Chx = BL6552_Data_Chx,
-    clear_power_data_Chx = clear_power_data_Chx
+    BL6552_Data_Chx = BL6552_Data_Chx
 }

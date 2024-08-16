@@ -152,6 +152,7 @@ local function BL6552_Init(cs)
     --bl6552_write(cs,0x8E, 0x04, 0x13, 0x88) -- 缺相超时检测时间设置
     bl6552_write(cs,0x93, 0x00, 0x00, 0xc3)  --使能ADC通道
     --bl6552_write(cs,0x98, 0x00, 0x92, 0x00)  --使能电量统计
+    bl6552_write(cs,0x9D,0x00,0x00,0x08) --Bit[23:0]设置为 1 时，电能相关寄存器 Reg46~2F 设置为读后清零。
     BL6552_CalSET_Proc(cs)
 
     -- 电参数运算系统复位（外部读取寄存器），Reg3B~2F清零
@@ -201,7 +202,7 @@ local function BL6552_Elect_Proc(cs)
     local _VC_RMS_Correct    = 9949
 
     local _VI_RMS_Correct   = 63
-    local _POWER_RMS_Correct   = 2387
+
     -- 电流有效值转换
     local _IA_RMS = bl6552_read(cs,0x0F)
     local _IB_RMS = bl6552_read(cs,0x0E)
@@ -215,8 +216,6 @@ local function BL6552_Elect_Proc(cs)
     -- 有效功率
     local _VI_RMS = bl6552_read(cs,0x25)
 
-    -- 电量
-    local _POWER_RMS = bl6552_read(cs,0x32)
     -- 数据校正 --
     -- 校准后的功率、电压、电流计算
     _VA_RMS = math.floor(_VA_RMS) / _VA_RMS_Correct
@@ -234,17 +233,19 @@ local function BL6552_Elect_Proc(cs)
     _VI_RMS = math.floor(_VI_RMS) / _VI_RMS_Correct
     --_VI_RMS = 1.73205*((_VA_RMS + _VC_RMS)/2)*((_IA_RMS + _IB_RMS + _IC_RMS)/3)*0.8    -- 有功功率
 
-    _POWER_RMS = math.floor(_POWER_RMS)/_POWER_RMS_Correct
-
     -- 数据校正 --
 
-    return _IA_RMS,_IB_RMS,_IC_RMS,_VA_RMS,_VB_RMS,_VC_RMS,_VI_RMS,_POWER_RMS
+    return _IA_RMS,_IB_RMS,_IC_RMS,_VA_RMS,_VB_RMS,_VC_RMS,_VI_RMS
 end
 
-local function clear_power_reg(cs)
-    BL6552_WR_Enable(cs,1) -- 打开写保护
-    bl6552_write(cs,0x32,0x00,0x00,0x00)
-    BL6552_WR_Enable(cs,0) -- 关闭写保护
+local function get_power(cs)
+    local _POWER_RMS_Correct   = 2387
+
+    -- 电量
+    local _POWER_RMS = bl6552_read(cs,0x32)
+    _POWER_RMS = math.floor(_POWER_RMS)/_POWER_RMS_Correct
+    print("------------------get_power---------------------- " .. _POWER_RMS)
+    return _POWER_RMS
 end
 
 -- 计量芯片复位引脚
@@ -300,5 +301,5 @@ return {
     BL6552_Elect_Proc = BL6552_Elect_Proc,
     BL6552_Init = BL6552_Init,
     test_data = test_data,
-    clear_power_reg = clear_power_reg,
+    get_power = get_power
 }

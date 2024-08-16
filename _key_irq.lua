@@ -5,7 +5,7 @@ log.info("shell -- file -- key_irq -- start")
 --请根据实际需求更改gpio编号和上下拉
 local KEYX = {17,19,18,2,16}
 
-local key_timer = 50
+local key_timer = 100
 local key_irq = "KeyOP"
 
 -- 自检锁按下3S计时开始标志

@@ -113,7 +113,7 @@ sys.taskInit(function()
     --local mqtt_host = "m2m.iyhl.com.my"
     local mqtt_host = fskv.get("MQTT_HOST")
     if mqtt_host == nil then
-        fskv.set("MQTT_HOST", "m2m.iyhl.com.my")
+        fskv.set("MQTT_HOST", "accesstest.360xlink.com")
         mqtt_host = fskv.get("MQTT_HOST")
     end
     mqttc = mqtt.create(nil,mqtt_host , mqtt_port, mqtt_isssl, ca_file)
