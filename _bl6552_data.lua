@@ -122,7 +122,7 @@ local function BL6552_Update_Data_Chx(Event,Chx,Data,Tag)
         BL6552_Elect_VB_RMS_Chx[Chx], BL6552_Elect_VC_RMS_Chx[Chx],
         BL6552_Elect_VI_RMS_Chx[Chx] = _bl6552_spi.BL6552_Elect_Proc(Chx)
         if Tag == "2" then --只对电磁阀进行操作的测量采取处理电量
-            BL6552_Elect_POWER_Chx[Chx] = _bl6552_spi.get_power(Chx)
+            BL6552_Elect_POWER_Chx[Chx] = _bl6552_spi.get_power(Chx,0)
         end
 
         log.warn("bl6552 Chx:", Chx, "data")
@@ -138,7 +138,7 @@ local function BL6552_Update_Data_Chx(Event,Chx,Data,Tag)
 
         if Tag == "2" then --只对电磁阀进行操作的测量采取处理电量
             --读取电量  （为了清零）
-            BL6552_Elect_POWER_Chx[Chx] = _bl6552_spi.get_power(Chx)
+            BL6552_Elect_POWER_Chx[Chx] = _bl6552_spi.get_power(Chx,0)
         end
         
         log.warn("bl6552 Chx:", Chx, "data")
@@ -152,29 +152,29 @@ end
 --电磁阀端口数据处理并且更新告警标志位
 ----------------------------------------------------------------------
 local function _BL6552_Update_I_SCALE_Chx(Chx)
-    if math.floor(((BL6552_Elect_IA_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IB_RMS_Chx[Chx] + 0.05)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
+    if math.floor(((BL6552_Elect_IA_RMS_Chx[Chx] + 0.01) / (BL6552_Elect_IB_RMS_Chx[Chx] + 0.01)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
         I_SCALE_Chx[Chx] = 1
-        I_SCALE_Chx_Num[Chx] = math.floor(((BL6552_Elect_IA_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IB_RMS_Chx[Chx] + 0.05)) * 100)
+        I_SCALE_Chx_Num[Chx] = math.floor(((BL6552_Elect_IA_RMS_Chx[Chx] + 0.01) / (BL6552_Elect_IB_RMS_Chx[Chx] + 0.01)) * 100)
     end
-    if math.floor(((BL6552_Elect_IB_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IA_RMS_Chx[Chx] + 0.05)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
+    if math.floor(((BL6552_Elect_IB_RMS_Chx[Chx] + 0.01) / (BL6552_Elect_IA_RMS_Chx[Chx] + 0.01)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
         I_SCALE_Chx[Chx] = 1
-        I_SCALE_Chx_Num[Chx] = math.floor(((BL6552_Elect_IB_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IA_RMS_Chx[Chx] + 0.05)) * 100)
+        I_SCALE_Chx_Num[Chx] = math.floor(((BL6552_Elect_IB_RMS_Chx[Chx] + 0.01) / (BL6552_Elect_IA_RMS_Chx[Chx] + 0.01)) * 100)
     end
-    if math.floor(((BL6552_Elect_IA_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IC_RMS_Chx[Chx] + 0.05)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
+    if math.floor(((BL6552_Elect_IA_RMS_Chx[Chx] + 0.01) / (BL6552_Elect_IC_RMS_Chx[Chx] + 0.01)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
         I_SCALE_Chx[Chx] = 1
-        I_SCALE_Chx_Num[Chx] = math.floor(((BL6552_Elect_IA_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IC_RMS_Chx[Chx] + 0.05)) * 100)
+        I_SCALE_Chx_Num[Chx] = math.floor(((BL6552_Elect_IA_RMS_Chx[Chx] + 0.01) / (BL6552_Elect_IC_RMS_Chx[Chx] + 0.01)) * 100)
     end
-    if math.floor(((BL6552_Elect_IC_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IA_RMS_Chx[Chx] + 0.05)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
+    if math.floor(((BL6552_Elect_IC_RMS_Chx[Chx] + 0.01) / (BL6552_Elect_IA_RMS_Chx[Chx] + 0.01)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
         I_SCALE_Chx[Chx] = 1
-        I_SCALE_Chx_Num[Chx] = math.floor(((BL6552_Elect_IC_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IA_RMS_Chx[Chx] + 0.05)) * 100)
+        I_SCALE_Chx_Num[Chx] = math.floor(((BL6552_Elect_IC_RMS_Chx[Chx] + 0.01) / (BL6552_Elect_IA_RMS_Chx[Chx] + 0.01)) * 100)
     end
-    if math.floor(((BL6552_Elect_IC_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IB_RMS_Chx[Chx] + 0.05)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
+    if math.floor(((BL6552_Elect_IC_RMS_Chx[Chx] + 0.01) / (BL6552_Elect_IB_RMS_Chx[Chx] + 0.01)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
         I_SCALE_Chx[Chx] = 1
-        I_SCALE_Chx_Num[Chx] = math.floor(((BL6552_Elect_IC_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IB_RMS_Chx[Chx] + 0.05)) * 100)
+        I_SCALE_Chx_Num[Chx] = math.floor(((BL6552_Elect_IC_RMS_Chx[Chx] + 0.01) / (BL6552_Elect_IB_RMS_Chx[Chx] + 0.01)) * 100)
     end
-    if math.floor(((BL6552_Elect_IB_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IC_RMS_Chx[Chx] + 0.05)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
+    if math.floor(((BL6552_Elect_IB_RMS_Chx[Chx] + 0.01) / (BL6552_Elect_IC_RMS_Chx[Chx] + 0.01)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
         I_SCALE_Chx[Chx] = 1
-        I_SCALE_Chx_Num[Chx] = math.floor(((BL6552_Elect_IB_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IC_RMS_Chx[Chx] + 0.05)) * 100)
+        I_SCALE_Chx_Num[Chx] = math.floor(((BL6552_Elect_IB_RMS_Chx[Chx] + 0.01) / (BL6552_Elect_IC_RMS_Chx[Chx] + 0.01)) * 100)
     end
 end
 
@@ -196,29 +196,29 @@ local function _BL6552_Update_ZXTO_OUT_Chx(Chx)
     ZXTO_OUT_C_Chx[Chx] = 0
 
     --------------------------------------
-    if math.floor(((BL6552_Elect_IA_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IB_RMS_Chx[Chx] + 0.05)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
+    if math.floor(((BL6552_Elect_IA_RMS_Chx[Chx] + 0.01) / (BL6552_Elect_IB_RMS_Chx[Chx] + 0.01)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
         ZXTO_OUT_A_Chx[Chx] = 1
         
     end
-    if math.floor(((BL6552_Elect_IB_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IA_RMS_Chx[Chx] + 0.05)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
+    if math.floor(((BL6552_Elect_IB_RMS_Chx[Chx] + 0.01) / (BL6552_Elect_IA_RMS_Chx[Chx] + 0.01)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
         ZXTO_OUT_A_Chx[Chx] = 1
         
     end
     
-    if math.floor(((BL6552_Elect_IA_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IC_RMS_Chx[Chx] + 0.05)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
+    if math.floor(((BL6552_Elect_IA_RMS_Chx[Chx] + 0.01) / (BL6552_Elect_IC_RMS_Chx[Chx] + 0.01)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
         ZXTO_OUT_B_Chx[Chx] = 1
         
     end
-    if math.floor(((BL6552_Elect_IC_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IA_RMS_Chx[Chx] + 0.05)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
+    if math.floor(((BL6552_Elect_IC_RMS_Chx[Chx] + 0.01) / (BL6552_Elect_IA_RMS_Chx[Chx] + 0.01)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
         ZXTO_OUT_B_Chx[Chx] = 1
         
     end
 
-    if math.floor(((BL6552_Elect_IC_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IB_RMS_Chx[Chx] + 0.05)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
+    if math.floor(((BL6552_Elect_IC_RMS_Chx[Chx] + 0.01) / (BL6552_Elect_IB_RMS_Chx[Chx] + 0.01)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
         ZXTO_OUT_C_Chx[Chx] = 1
     
     end
-    if math.floor(((BL6552_Elect_IB_RMS_Chx[Chx] + 0.05) / (BL6552_Elect_IC_RMS_Chx[Chx] + 0.05)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
+    if math.floor(((BL6552_Elect_IB_RMS_Chx[Chx] + 0.01) / (BL6552_Elect_IC_RMS_Chx[Chx] + 0.01)) * 100) < tonumber(fskv.get("I_SCALE_NUM_CHX_CONFIG")["_" .. tostring(Chx)]) then
         ZXTO_OUT_C_Chx[Chx] = 1
         
     end
@@ -316,7 +316,7 @@ local function _MQTT_Warn_ZXTO_OUT_Chx(Chx)
     -- 先报输入缺相（电压）
     if fskv.get("ZXTO_ENABLE_CHX_CONFIG")["_" .. tostring(Chx)] == "1" then -- 对应通道缺相判断使能
         --缺相使能后即可上报缺相错误
-        --缺相使能后即可上报缺相错误
+
         if ZXTO_OUT_A_Chx[Chx] == 1 then
             sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, "A", "", "0")
             H_ZXTO_OUT_A_Chx[Chx] = 1
@@ -324,6 +324,7 @@ local function _MQTT_Warn_ZXTO_OUT_Chx(Chx)
             ZXTO_OUT_A_Chx[Chx] = 0
             sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, "A", "", "1")
         end 
+
         if ZXTO_OUT_B_Chx[Chx] == 1 then
             sys.publish("DeviceWarn_Status","Alert_ZXTO", Chx, "B", "", "0") 
             H_ZXTO_OUT_B_Chx[Chx] = 1
