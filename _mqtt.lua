@@ -56,21 +56,10 @@ sys.taskInit(function()
             local tjsondata, jsonresult, errinfo = json.decode(inMsg)
             if jsonresult then
                 -------------------------------------------更新
-                print("Cmd = ", tjsondata["Cmd"])
-                print("Data = ", tjsondata["Data"])
+
                 _mqtt_handle.Mqtt_Handle(tjsondata)
             end
         end
-        -- while #recvQuene > 0 do -- 数组大于零？执行到将数据发送完
-        --     local inMsg = table.remove(recvQuene, 1) -- 取出并删除一个元素
-        --     local tjsondata, jsonresult, errinfo = json.decode(inMsg)
-        --     if jsonresult then
-        --         -------------------------------------------更新
-        --         print("Cmd = ", tjsondata["Cmd"])
-        --         print("Data = ", tjsondata["Data"])
-        --         _mqtt_handle.Mqtt_Handle(tjsondata)
-        --     end
-        -- end
     end
 
 end)

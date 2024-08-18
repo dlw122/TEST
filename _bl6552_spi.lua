@@ -225,27 +225,39 @@ local function BL6552_Elect_Proc(cs)
     _IB_RMS = math.floor(_IB_RMS) / _IB_RMS_Correct
     _IC_RMS = math.floor(_IC_RMS) / _IC_RMS_Correct
 
-    if _IA_RMS < 0.03 then _IA_RMS = 0 end
-    if _IB_RMS < 0.03 then _IB_RMS = 0 end
-    if _IC_RMS < 0.03 then _IC_RMS = 0 end
+    if _IA_RMS < 0.01 then _IA_RMS = 0 end
+    if _IB_RMS < 0.01 then _IB_RMS = 0 end
+    if _IC_RMS < 0.01 then _IC_RMS = 0 end
 
     -- 校准后计算功率
     _VI_RMS = math.floor(_VI_RMS) / _VI_RMS_Correct
     --_VI_RMS = 1.73205*((_VA_RMS + _VC_RMS)/2)*((_IA_RMS + _IB_RMS + _IC_RMS)/3)*0.8    -- 有功功率
 
     -- 数据校正 --
+    ----------------------------
 
+    ----------------------------
     return _IA_RMS,_IB_RMS,_IC_RMS,_VA_RMS,_VB_RMS,_VC_RMS,_VI_RMS
 end
 
-local function get_power(cs)
+local all_powers = {0,0,0,0}
+-- 由于寄存器的读会导致自动清零 现在用软件去统计电量
+local function get_power(cs,flag)  
     local _POWER_RMS_Correct   = 2387
-
+    local res_power = 0
     -- 电量
     local _POWER_RMS = bl6552_read(cs,0x32)
     _POWER_RMS = math.floor(_POWER_RMS)/_POWER_RMS_Correct
-    print("------------------get_power---------------------- " .. _POWER_RMS)
-    return _POWER_RMS
+    
+    all_powers[cs] = all_powers[cs] + _POWER_RMS --统计此区间电量
+    res_power = all_powers[cs] --返回此区间电量
+    if flag == 0 then
+        all_powers[cs] = 0 --电量统计完成后 清零
+    elseif flag == 1 then
+        --只是读取电量 不清零
+    end
+    print("------------------get_power---------------------- " .. res_power)
+    return res_power
 end
 
 -- 计量芯片复位引脚

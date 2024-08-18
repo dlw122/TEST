@@ -192,7 +192,7 @@ local function Mqtt_Set_Timer_Control()
         --清除电量
         if Server_time["hour"] == 23 and Server_time["min"] == 59 and sec == 0 then
             for i = 1, 4, 1 do
-                local _P = _bl6552_spi.get_power(i)
+                local _P = _bl6552_spi.get_power(i,0)
                 sys.publish("DeviceResponse_Status","GetChx_WVIP", i, string.format("%.4f",_P), "", "")
             end
         end

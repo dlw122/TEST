@@ -96,7 +96,7 @@ uart.on(uartid, "receive", function(id, len)
                             end    
                         end
                         
-                    local str =  "SN ".. fskv.get("Device_SN")..",Module ".. fskv.get("Module")..",HW ".. fskv.get("HW")..",FW ".. fskv.get("FW")..",IMEI ".. mobile.imei()..",IMSI ".. mobile.imsi()..",ICCID ".. mobile.iccid()
+                    local str =  "SN ".. fskv.get("Device_SN")..",Module ".. fskv.get("Module")..",HW ".. fskv.get("HW")..",SW ".. fskv.get("SW")..",IMEI ".. mobile.imei()..",IMSI ".. mobile.imsi()..",ICCID ".. mobile.iccid()
                     local str1 = string.char( 0xA5, 0xA5, string.len(str) + 2, 0x01) .. str
                     log.warn("str len ------",string.len(str) + 2)
                     local crc1 = 0

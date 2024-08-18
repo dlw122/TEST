@@ -47,11 +47,13 @@ sys.taskInit(function()
         fskv.set("POWER_CLOSE_ENABLE_CONFIG", "1")
         fskv.set("ElE_CHX", {_1 = "0",_2 = "0",_3 = "0",_4 = "0"})
         fskv.set("LOCK_FLAG", "0")
-        fskv.set("TimeSync_CONFIG", "")
+        fskv.set("TimeSync_CONFIG", "") --时区
         log.info("fskv------------init!")
     end
     fskv.set("HW", "V1.1")
-    fskv.set("FW", "V2024081601")
+    fskv.set("FW", "V1R1C01") --外部版本号
+    fskv.set("SW", "V1R1C01SPC01") --外部版本号+内部版本号
+    --fskv.set("FW", "V2024081601")
 
     log.info("Device_SN                 ------------",fskv.get("Device_SN"))
     log.warn("I_SCALE_ENABLE_CHX_CONFIG ------------",fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_1"],fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_2"],fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_3"],fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_4"])

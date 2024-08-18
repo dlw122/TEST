@@ -32,13 +32,18 @@ local function Mqtt_Handle_Whole(tjsondata)
             rtos.reboot()
             
         end
+    -------------------------------------------获取详细版本号
+    elseif tjsondata["Cmd"] == "GetVer" then --
+        if tjsondata["Data"] == "" then
+            sys.publish("DeviceResponse_Status",tjsondata["Cmd"], tjsondata["Chx"], fskv.get("SW"), "", "")
+        end
     -------------------------------------------复位
     elseif tjsondata["Cmd"] == "Reset" then --
         if tjsondata["Data"] == "" then
             fskv.set("I_SCALE_ENABLE_CHX_CONFIG", {_1 = "1",_2 = "1",_3 = "1",_4 = "1"})
             fskv.set("I_SCALE_NUM_CHX_CONFIG",{_1 = "40",_2 = "40",_3 = "40",_4 = "40"})
             fskv.set("I_NUM_CHX_CONFIG", {_1 = "20",_2 = "20",_3 = "20",_4 = "20"})
-            fskv.set("V_NUM_CHX_CONFIG",{_1 = "250",_2 = "250",_3 = "250",_4 = "250"})
+            fskv.set("V_NUM_CHX_CONFIG",{_1 = "430",_2 = "430",_3 = "430",_4 = "430"})
             fskv.set("IV_NUM_ENABLE_CHX_CONFIG", {_1 = "1",_2 = "1",_3 = "1",_4 = "1"})
             fskv.set("ZXTO_ENABLE_CHX_CONFIG",{_1 = "1",_2 = "1",_3 = "1",_4 = "1"})
             fskv.set("VVVF_ENABLE_CHX_CONFIG", {_1 = "0",_2 = "0",_3 = "0",_4 = "0"})
@@ -197,7 +202,7 @@ local function Mqtt_Handle_Pass_Get(tjsondata)
     end
     ------------------------------------------- 获取功率电压电流
     if tjsondata["Cmd"] == "GetChx_WVIP" and tjsondata["Data"] == "1" then
-        local _P =  _bl6552_spi.get_power(tjsondata["Chx"])
+        local _P =  _bl6552_spi.get_power(tjsondata["Chx"],1)
         sys.publish("DeviceResponse_Status","GetChx_WVIP", tjsondata["Chx"], string.format("%.4f",_P), "", "")
     end
 end
