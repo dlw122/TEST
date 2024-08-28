@@ -36,7 +36,7 @@ sys.taskInit(function()
         fskv.set("I_SCALE_ENABLE_CHX_CONFIG", {_1 = "1",_2 = "1",_3 = "1",_4 = "1"})
         fskv.set("I_SCALE_NUM_CHX_CONFIG",{_1 = "40",_2 = "40",_3 = "40",_4 = "40"})
         fskv.set("I_NUM_CHX_CONFIG", {_1 = "6",_2 = "6",_3 = "6",_4 = "6"})
-        fskv.set("V_NUM_CHX_CONFIG",{_1 = "430",_2 = "430",_3 = "430",_4 = "430"})
+        fskv.set("V_NUM_CHX_CONFIG",{_1 = "420",_2 = "420",_3 = "420",_4 = "420"})
         fskv.set("IV_NUM_ENABLE_CHX_CONFIG", {_1 = "1",_2 = "1",_3 = "1",_4 = "1"})
         fskv.set("ZXTO_ENABLE_CHX_CONFIG",{_1 = "1",_2 = "1",_3 = "1",_4 = "1"})
         fskv.set("VVVF_ENABLE_CHX_CONFIG", {_1 = "0",_2 = "0",_3 = "0",_4 = "0"})
@@ -52,7 +52,7 @@ sys.taskInit(function()
     end
     fskv.set("HW", "V1.1")
     fskv.set("FW", "V1R1C01") --外部版本号
-    fskv.set("SW", "V1R1C01SPC01") --外部版本号+内部版本号
+    fskv.set("SW", "V1R1C01SPC03") --外部版本号+内部版本号
     --fskv.set("FW", "V2024081601")
 
     log.info("Device_SN                 ------------",fskv.get("Device_SN"))

@@ -1,5 +1,5 @@
 -- LuaTools需要PROJECT和VERSION这两个信息
-PROJECT = "mqttdemo"
+PROJECT = "XLK"
 VERSION = "1.0.0"
 log.info("shell -- file -- main -- start")
 

@@ -176,7 +176,7 @@ uart.on(uartid, "receive", function(id, len)
                         uart.write(uartid, str1 .. str_crc)
                     elseif data:byte(1) == 4 then --DTU信息获取
                         log.warn("uart", "DTU信息获取", "----------")
-                        local str1 = string.char( 0xA5, 0xA5, 24, 0x04,fskv.get("APN_TYPE"),fskv.get("Module_TYPE")) .. fskv.get("Device_SN") .. fskv.get("HW") .. fskv.get("FW")
+                        local str1 = string.char( 0xA5, 0xA5, 28, 0x04,fskv.get("APN_TYPE"),fskv.get("Module_TYPE")) .. fskv.get("Device_SN") .. fskv.get("HW") .. fskv.get("SW")
                         local crc1 = 0
                         for i = 1, #str1 do
                             crc1 = crc1 + str1:byte(i)
