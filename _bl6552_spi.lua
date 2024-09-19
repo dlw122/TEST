@@ -245,10 +245,11 @@ local all_powers = {0,0,0,0}
 local function get_power(cs,flag)  
     local _POWER_RMS_Correct   = 2387
     local res_power = 0
-    -- 电量
+    -- 读取合共功电量寄存器计数
     local _POWER_RMS = bl6552_read(cs,0x32)
+    -- 此时值已经读取到内存中 芯片的值已经清零
     _POWER_RMS = math.floor(_POWER_RMS)/_POWER_RMS_Correct
-    
+    -- 将内存的电量值增加到总电量中
     all_powers[cs] = all_powers[cs] + _POWER_RMS --统计此区间电量
     res_power = all_powers[cs] --返回此区间电量
     if flag == 0 then

@@ -69,7 +69,7 @@ end
 ------时间计数
 sys.taskInit(function()
     while true do
-        sys.wait(1000)
+        local res,time_min_sync = sys.waitUntil("Server_Time_Min")
         for i = 1, 4, 1 do
             BL6552_Elect_POWER_TIME_Chx[i] = BL6552_Elect_POWER_TIME_Chx[i] + 1
         end
@@ -139,6 +139,9 @@ local function BL6552_Update_Data_Chx(Event,Chx,Data,Tag)
         if Tag == "2" then --只对电磁阀进行操作的测量采取处理电量
             --读取电量  （为了清零）
             BL6552_Elect_POWER_Chx[Chx] = _bl6552_spi.get_power(Chx,0)
+        elseif Tag == "0" then --
+            --读取电量  （不清零，为了定时上报获取数据）
+            BL6552_Elect_POWER_Chx[Chx] = _bl6552_spi.get_power(Chx,1)
         end
         
         log.warn("bl6552 Chx:", Chx, "data")
@@ -464,29 +467,30 @@ local function BL6552_Mqtt_Report_Chx(Event,Chx,Data,Tag)
 
         --业务逻辑
         if Tag == "0" then --
-            _data = string.format("%.2f_%.2f_%.2f_%.2f_%.2f_%.2f_%.2f",_W,_VA,_VB,_VC,_IA,_IB,_IC,_P) -- 保存数据
+            _data = string.format("%.2f_%.2f_%.2f_%.2f_%.2f_%.2f_%.2f",_W,_VA,_VB,_VC,_IA,_IB,_IC,_P) -- 上报数据
             sys.publish("DeviceResponse_Status",Event, Chx, _data, "1", Tag)   -----------
         elseif Tag == "1" then
-            _data = string.format("%.2f_%.2f_%.2f_%.2f_%.2f_%.2f_%.2f",_W,_VA,_VB,_VC,_IA,_IB,_IC,_P) -- 保存数据
+            _data = string.format("%.2f_%.2f_%.2f_%.2f_%.2f_%.2f_%.2f",_W,_VA,_VB,_VC,_IA,_IB,_IC,_P) -- 上报数据
             sys.publish("DeviceResponse_Status",Event, Chx, _data, "1", Tag)   -----------
         elseif Tag == "2" then
             BL6552_Elect_POWER_TIME_Chx[Chx] =  0 -- 电量计时清零
-            _data = string.format("%.2f_%.2f_%.2f_%.2f_%.2f_%.2f_%.2f",_W,_VA,_VB,_VC,_IA,_IB,_IC,_P) -- 保存数据
+            _data = string.format("%.2f_%.2f_%.2f_%.2f_%.2f_%.2f_%.2f",_W,_VA,_VB,_VC,_IA,_IB,_IC,_P) -- 上报数据
             sys.publish("DeviceResponse_Status",Event, Chx, _data, "1", Tag)   -----------
         end
     elseif Data == 0 and _led.Get_Electromagnetic_ChX(Chx) == 0 then
 
         --业务逻辑
         if Tag == "0" then --
-            sys.publish("DeviceResponse_Status",Event, Chx, Data, "", Tag)
+            --不上报
         elseif Tag == "1" then
             --不上报
         elseif Tag == "2" then
             _data = string.format("%.4f",_P) -- 保存数据
-            local _f = math.floor((BL6552_Elect_POWER_TIME_Chx[Chx] + 30)/60) -- 计算电量分钟数
+            local _f = math.floor(BL6552_Elect_POWER_TIME_Chx[Chx]) -- 计算电量分钟数
             _data = _data .. "_" .. tostring(_f)
             sys.publish("DeviceResponse_Status","GetEnergy", Chx, _data, "0", Tag) -----------
         end
+
     end
 end
 

@@ -26,7 +26,7 @@ end
 ---------------------------------------------------
 local Server_time = {hour = 23, min = 58}
 
---输入时间字符串 "2023/08/15,10:07:00"
+--输入时间字符串 "10:07"
 local function Set_Time(time_sync)
     Server_time["hour"]  = tonumber(string.sub(time_sync, 1, 2))
     Server_time["min"]   = tonumber(string.sub(time_sync, 4, 5))
@@ -172,23 +172,25 @@ local function Mqtt_Set_Timer_Control()
     Set_Time(time_sync)    --设置本机时间
     sys.publish("Mqtt_Set_Timer")    --通知定时器任务更新时间
     while true do        --本地更新时间
-        res,time_sync = sys.waitUntil("TimeSync",1000) -- 等待服务器同步本机时间（至少同步一次）
+        res,time_sync = sys.waitUntil("TimeSync",10000) -- 等待服务器同步本机时间（至少同步一次）
         if res == true then
             Set_Time(time_sync)    --设置本机时间
             sec = 0
-        end    --设置本机时间  --等待1S 后续也可以计数增加1S
-        -- 时间 + 1S
-        sec = sec + 1
-        if sec > 59 then
-            sec = 0
-            Server_time["min"] = Server_time["min"] + 1
-            if Server_time["min"] > 59 then
-                Server_time["min"] = 0
-                Server_time["hour"] = Server_time["hour"] + 1
-                if Server_time["hour"] > 23 then Server_time["hour"] = 0 end
+            --设置本机时间  --等待10S 后续也可以计数增加10S
+        elseif res == false then
+            -- 时间 + 10S
+            sec = sec + 10
+            if sec > 59 then
+                sec = 0
+                sys.publish("Server_Time_Min",Server_time)    --发送分钟更新事件
+                Server_time["min"] = Server_time["min"] + 1
+                if Server_time["min"] > 59 then
+                    Server_time["min"] = 0
+                    Server_time["hour"] = Server_time["hour"] + 1
+                    if Server_time["hour"] > 23 then Server_time["hour"] = 0 end
+                end
             end
         end
-
         --清除电量
         if Server_time["hour"] == 23 and Server_time["min"] == 59 and sec == 0 then
             for i = 1, 4, 1 do
