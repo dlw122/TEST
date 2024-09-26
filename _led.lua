@@ -55,6 +55,12 @@ local function LED_Chx(Event,Chx,Data)    --Chx = 1,event = "key" or "bl6553_irq
     ExtiinsertMsg(t)
 end
 
+local speed_status = 0 --服务器控制标志
+
+local function set_speed_status(data)
+    speed_status = data
+end
+
 sys.taskInit(function()
 
     while true do
@@ -77,13 +83,44 @@ sys.taskInit(function()
 
                     -- 控制电磁阀
                     if fskv.get("LOCK_FLAG") == "0" then
-                        if tData.tEvent == "SysOP" or tData.tEvent == "SvrOP" or tData.tEvent == "KeyOP" or tData.tEvent == "TimeOP" then                                           
-                            --_timer.Elec_Timer_Chx_Clear(tData.tEvent,tData.tChx,tData.tData) --定时器标志清除
-                            Set_Electromagnetic_ChX(tData.tChx,tData.tData) -- 更新电磁阀与LED状态
-                            sys.publish("DeviceResponse_Status",tData.tEvent, tData.tChx, tostring(tData.tData), "", "")  
-                            sys.timerStart(sys.publish, 2100, "BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "2")
-                            if tData.tData == 1 then 
-                                sys.timerStart(sys.publish, 60000,"BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "1")
+
+                        if fskv.get("SPEED_CHX_ENABLE")["_" .. tostring(tData.tChx)] == "1" then
+                            if tData.tEvent == "SysOP" then                                           
+                                --_timer.Elec_Timer_Chx_Clear(tData.tEvent,tData.tChx,tData.tData) --定时器标志清除
+                                Set_Electromagnetic_ChX(tData.tChx,tData.tData) -- 更新电磁阀与LED状态
+                                sys.publish("DeviceResponse_Status",tData.tEvent, tData.tChx, tostring(tData.tData), "", "")  
+                                sys.timerStart(sys.publish, 2100, "BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "2")
+                                if tData.tData == 1 then 
+                                    sys.timerStart(sys.publish, 60000,"BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "1")
+                                end
+                                speed_status = 1
+                                sys.timerStart(set_speed_status, 5000, 0)
+                            elseif tData.tEvent == "SysOP" or tData.tEvent == "TimeOP" then                                           
+                                --_timer.Elec_Timer_Chx_Clear(tData.tEvent,tData.tChx,tData.tData) --定时器标志清除
+                                Set_Electromagnetic_ChX(tData.tChx,tData.tData) -- 更新电磁阀与LED状态
+                                sys.publish("DeviceResponse_Status",tData.tEvent, tData.tChx, tostring(tData.tData), "", "")  
+                                sys.timerStart(sys.publish, 2100, "BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "2")
+                                if tData.tData == 1 then 
+                                    sys.timerStart(sys.publish, 60000,"BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "1")
+                                end
+                            elseif tData.tEvent == "KeyOP" and speed_status == 0 then                                           
+                                --_timer.Elec_Timer_Chx_Clear(tData.tEvent,tData.tChx,tData.tData) --定时器标志清除
+                                Set_Electromagnetic_ChX(tData.tChx,tData.tData) -- 更新电磁阀与LED状态
+                                sys.publish("DeviceResponse_Status",tData.tEvent, tData.tChx, tostring(tData.tData), "", "")  
+                                sys.timerStart(sys.publish, 2100, "BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "2")
+                                if tData.tData == 1 then 
+                                    sys.timerStart(sys.publish, 60000,"BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "1")
+                                end
+                            end
+                        elseif fskv.get("SPEED_CHX_ENABLE")["_" .. tostring(tData.tChx)] == "0" then
+                            if tData.tEvent == "SysOP" or tData.tEvent == "SvrOP" or tData.tEvent == "KeyOP" or tData.tEvent == "TimeOP" then                                           
+                                --_timer.Elec_Timer_Chx_Clear(tData.tEvent,tData.tChx,tData.tData) --定时器标志清除
+                                Set_Electromagnetic_ChX(tData.tChx,tData.tData) -- 更新电磁阀与LED状态
+                                sys.publish("DeviceResponse_Status",tData.tEvent, tData.tChx, tostring(tData.tData), "", "")  
+                                sys.timerStart(sys.publish, 2100, "BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "2")
+                                if tData.tData == 1 then 
+                                    sys.timerStart(sys.publish, 60000,"BL6552_Chx", tData.tEvent, tData.tChx, tData.tData, "1")
+                                end
                             end
                         end
                     end

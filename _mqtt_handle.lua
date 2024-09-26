@@ -189,6 +189,10 @@ local function Mqtt_Handle_Pass_Enable(tjsondata)
         -- 使能状态改变即可读取数据
         sys.publish("BL6552_Chx","GetChx", tjsondata["Chx"], _led.Get_Electromagnetic_ChX(i), "0")     
         sys.publish("DeviceResponse_Status","Prof_ZXTO", tjsondata["Chx"], tjsondata["Data"], "", "")
+    -------------------------------------------启/停用调速
+    elseif tjsondata["Cmd"] == "Prof_Speed" then --
+        fskv.sett("SPEED_CHX_ENABLE", "_" .. tostring(tjsondata["Chx"]), tjsondata["Data"])
+        sys.publish("DeviceResponse_Status","Prof_Speed", tjsondata["Chx"], tjsondata["Data"], "", "")
     end
 end
 
