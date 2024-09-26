@@ -52,7 +52,7 @@ sys.taskInit(function()
     end
     fskv.set("HW", "V1.1")
     fskv.set("FW", "V1R1C01") --外部版本号
-    fskv.set("SW", "V1R1C01SPC03") --外部版本号+内部版本号
+    fskv.set("SW", "V1R1C01SPC05") --外部版本号+内部版本号
     --fskv.set("FW", "V2024081601")
 
     log.info("Device_SN                 ------------",fskv.get("Device_SN"))
