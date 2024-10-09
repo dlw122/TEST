@@ -53,8 +53,13 @@ sys.taskInit(function()
     end
     fskv.set("HW", "V1.1")
     fskv.set("FW", "V1R1C01") --外部版本号
-    fskv.set("SW", "V1R1C01SPC05") --外部版本号+内部版本号
+    fskv.set("SW", "V1R1C01SPC06") --外部版本号+内部版本号
     --fskv.set("FW", "V2024081601")
+
+    if fskv.get("SPEED_CHX_ENABLE") == nil then
+        fskv.set("SPEED_CHX_ENABLE", {_1 = "0",_2 = "0",_3 = "0",_4 = "0"})
+    end
+
 
     log.info("Device_SN                 ------------",fskv.get("Device_SN"))
     log.warn("I_SCALE_ENABLE_CHX_CONFIG ------------",fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_1"],fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_2"],fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_3"],fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_4"])
@@ -64,6 +69,7 @@ sys.taskInit(function()
     log.warn("IV_NUM_ENABLE_CHX_CONFIG  ------------",fskv.get("IV_NUM_ENABLE_CHX_CONFIG")["_1"],fskv.get("IV_NUM_ENABLE_CHX_CONFIG")["_2"],fskv.get("IV_NUM_ENABLE_CHX_CONFIG")["_3"],fskv.get("IV_NUM_ENABLE_CHX_CONFIG")["_4"])
     log.warn("ZXTO_ENABLE_CHX_CONFIG    ------------",fskv.get("ZXTO_ENABLE_CHX_CONFIG")["_1"],fskv.get("ZXTO_ENABLE_CHX_CONFIG")["_2"],fskv.get("ZXTO_ENABLE_CHX_CONFIG")["_3"],fskv.get("ZXTO_ENABLE_CHX_CONFIG")["_4"])
     log.warn("VVVF_ENABLE_CHX_CONFIG    ------------",fskv.get("VVVF_ENABLE_CHX_CONFIG")["_1"],fskv.get("VVVF_ENABLE_CHX_CONFIG")["_2"],fskv.get("VVVF_ENABLE_CHX_CONFIG")["_3"],fskv.get("VVVF_ENABLE_CHX_CONFIG")["_4"])
+    log.warn("SPEED_CHX_ENABLE          ------------",fskv.get("SPEED_CHX_ENABLE")["_1"],fskv.get("SPEED_CHX_ENABLE")["_2"],fskv.get("SPEED_CHX_ENABLE")["_3"],fskv.get("SPEED_CHX_ENABLE")["_4"])
     log.warn("TEMPERATURE_NUM_CONFIG    ------------",fskv.get("TEMPERATURE_NUM_CONFIG"))
     log.warn("START_Time_CHX_CONFIG     ------------",fskv.get("START_Time_CHX_CONFIG")["_1"],fskv.get("START_Time_CHX_CONFIG")["_2"],fskv.get("START_Time_CHX_CONFIG")["_3"],fskv.get("START_Time_CHX_CONFIG")["_4"])
     log.warn("CLOSE_Time_CHX_CONFIG     ------------",fskv.get("CLOSE_Time_CHX_CONFIG")["_1"],fskv.get("CLOSE_Time_CHX_CONFIG")["_2"],fskv.get("CLOSE_Time_CHX_CONFIG")["_3"],fskv.get("CLOSE_Time_CHX_CONFIG")["_4"])

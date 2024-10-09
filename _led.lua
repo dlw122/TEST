@@ -69,7 +69,7 @@ sys.taskInit(function()
             while #ExtimsgQuene > 0 do -- 数组大于零？
                 sys.wait(5) -- GIAO
                 local tData = table.remove(ExtimsgQuene, 1) -- 取出并删除一个元素 
-                    log.debug("LED事件处理", tData.tEvent, tData.tChx, tData.tData)
+                    log.warn("LED事件处理", tData.tEvent, tData.tChx, tData.tData)
 
                     -- 告警 -> 关闭电磁阀  （预期状态与实际状态的综合判断）
                     if tData.tEvent == "AlertOP" then
@@ -85,7 +85,7 @@ sys.taskInit(function()
                     if fskv.get("LOCK_FLAG") == "0" then
 
                         if fskv.get("SPEED_CHX_ENABLE")["_" .. tostring(tData.tChx)] == "1" then
-                            if tData.tEvent == "SysOP" then                                           
+                            if tData.tEvent == "SvrOP" then                                           
                                 --_timer.Elec_Timer_Chx_Clear(tData.tEvent,tData.tChx,tData.tData) --定时器标志清除
                                 Set_Electromagnetic_ChX(tData.tChx,tData.tData) -- 更新电磁阀与LED状态
                                 sys.publish("DeviceResponse_Status",tData.tEvent, tData.tChx, tostring(tData.tData), "", "")  
