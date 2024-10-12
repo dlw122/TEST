@@ -53,13 +53,12 @@ sys.taskInit(function()
     end
     fskv.set("HW", "V1.1")
     fskv.set("FW", "V1R1C01") --外部版本号
-    fskv.set("SW", "V1R1C01SPC06") --外部版本号+内部版本号
+    fskv.set("SW", "V1R1C01SPC08") --外部版本号+内部版本号
     --fskv.set("FW", "V2024081601")
 
     if fskv.get("SPEED_CHX_ENABLE") == nil then
         fskv.set("SPEED_CHX_ENABLE", {_1 = "0",_2 = "0",_3 = "0",_4 = "0"})
     end
-
 
     log.info("Device_SN                 ------------",fskv.get("Device_SN"))
     log.warn("I_SCALE_ENABLE_CHX_CONFIG ------------",fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_1"],fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_2"],fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_3"],fskv.get("I_SCALE_ENABLE_CHX_CONFIG")["_4"])
@@ -78,6 +77,7 @@ sys.taskInit(function()
     log.warn("ElE_CHX                   ------------",fskv.get("ElE_CHX")["_1"],fskv.get("ElE_CHX")["_2"],fskv.get("ElE_CHX")["_3"],fskv.get("ElE_CHX")["_4"])
     log.warn("LOCK_FLAG                 ------------",fskv.get("LOCK_FLAG"))
     log.warn("TimeSync_CONFIG           ------------",fskv.get("TimeSync_CONFIG"))
+    log.warn("iccid                     ------------",mobile.iccid())
 end)
 
 
